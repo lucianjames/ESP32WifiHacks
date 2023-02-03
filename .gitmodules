@@ -1,0 +1,3 @@
+[submodule "HostCode/ArduinoSerialIO"]
+	path = HostCode/ArduinoSerialIO
+	url = https://www.github.com/lj3d/ArduinoSerialIO
