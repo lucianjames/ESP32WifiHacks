@@ -6,10 +6,8 @@
 #include "esp_event.h"
 #include "nvs_flash.h"
 
-#define ESP_ERROR_CHECK(x) x
-
-// Just print readable stuff to the console for now
-// Will create stuff that can be parsed by the interface program later
+// Callback function for promiscuous mode
+// This function sends beacon frames back to the host pc, so that they can be parsed and stored
 void wifi_promiscuous(void* buf, wifi_promiscuous_pkt_type_t type) {
     wifi_promiscuous_pkt_t* pkt = (wifi_promiscuous_pkt_t*)buf; // Cast the void type into an actual usable packet type
     if(pkt->payload[0] == 0x80){
@@ -46,10 +44,10 @@ void app_main(void){
     // System & WiFi setup
     nvs_flash_init();
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_NULL));
-    ESP_ERROR_CHECK(esp_wifi_start());
+    esp_wifi_init(&cfg);
+    esp_wifi_set_storage(WIFI_STORAGE_RAM);
+    esp_wifi_set_mode(WIFI_MODE_NULL);
+    esp_wifi_start();
     esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
     
     // Set the callback function and start promiscuous mode
