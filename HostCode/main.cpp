@@ -6,6 +6,7 @@
 arduinoSerial Serial("/dev/ttyUSB0");
 
 void SSID_BSSID_SCAN(){
+    int beacons = 0;
     while(1){
         std::cout << "Waiting for next beacon frame....\n";
         // Read until "==BEGIN BEACON==" is found
@@ -80,13 +81,17 @@ void SSID_BSSID_SCAN(){
         printf("BEACON ON CHANNEL:\n%d\n", channel);
 
         std::cout << "==END BEACON INFO==" << std::endl;
+
+        if(beacons++ > 10){
+            Serial.write_s('q');
+        }
     }
-    Serial.write_s('q');
 }
 
 int main(){
     Serial.begin(B115200);
     Serial.setTimeout(10000);
+    Serial.write_s('s');
 
     SSID_BSSID_SCAN();
 
