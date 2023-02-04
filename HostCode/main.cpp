@@ -92,9 +92,37 @@ void SSID_BSSID_SCAN(){
 int main(){
     Serial.begin(B115200);
     Serial.setTimeout(10000);
-    Serial.write_s('s');
 
-    SSID_BSSID_SCAN();
+    std::vector<char> ssidCmd;
+
+
+    ssidCmd.push_back('b');
+    std::string testSSID = "testSSID";
+    for(char c : testSSID){
+        ssidCmd.push_back(c);
+    }
+    ssidCmd.push_back('\0');
+
+    ssidCmd.push_back('\0');
+    testSSID = "among us";
+    for(char c : testSSID){
+        ssidCmd.push_back(c);
+    }
+    ssidCmd.push_back('\0');
+
+    ssidCmd.push_back('\n'); // End of command
+
+    for(auto c : ssidCmd){
+        Serial.write_s(c);
+    }
+
+    // Print whatever the esp sends back
+    while(1){
+        int byte = Serial.read_s();
+        if(byte != -1){
+            printf("%c", byte);
+        }
+    }
 
     return 0;
 }
