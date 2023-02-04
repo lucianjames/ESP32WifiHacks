@@ -104,7 +104,7 @@ int main(){
 
     ssidCmd.push_back('b');
     ssidCmd.push_back(0x03);
-    for(int i=0; i<10; i++){
+    for(int i=0; i<100; i++){
         std::string ssid = "epic-gaming-" + std::to_string(i);
         for(char c : ssid){
             ssidCmd.push_back(c);
