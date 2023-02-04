@@ -103,15 +103,10 @@ int main(){
 
 
     ssidCmd.push_back('b');
-    std::string testSSID = "testSSIDs";
-    for(char c : testSSID){
-        ssidCmd.push_back(c);
-    }
     ssidCmd.push_back(0x03);
-
-    for(int i=0; i<25; i++){
-        testSSID = "among us-" + std::to_string(i);
-        for(char c : testSSID){
+    for(int i=0; i<10; i++){
+        std::string ssid = "epic-gaming-" + std::to_string(i);
+        for(char c : ssid){
             ssidCmd.push_back(c);
         }
         ssidCmd.push_back(0x03);

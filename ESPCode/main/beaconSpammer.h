@@ -5,8 +5,8 @@
 // BSSID goes here (6 bytes) (same as source MAC address)
 uint8_t beaconFrame_p2[] = {
     0xc0, 0x05, 0x26, 0x23, 0x00, 0x3f, 0x00, 0x00, 0x00, 0x00, // Seq num + timestamp
-    0x64, 0x00, 0x11, 0x04, 0x00, 
-};
+    0x64, 0x00, 0x11, 0x04, 0x00, // Beacon interval (set to 300ms)
+}; // Default for beacon interval is 100ms 0x64, 0x00
 // SSID length goes here (1 byte)
 // SSID goes here (<length> bytes)
 uint8_t beaconFrame_p3[] = {
@@ -14,20 +14,6 @@ uint8_t beaconFrame_p3[] = {
     0x18, 0x24, 0x32, 0x04, 0x30, 0x48, 0x60, 0x6c, 0x03, 0x01,
 };
 // Channel goes here (1 byte)
-
-/*
-uint8_t beaconFrame_p4[] = {
-    0x05, 0x04, 0x00, 0x02, 0x00,
-    0x00, 0x2a, 0x01, 0x04, 0x30, 0x14, 0x01, 0x00, 0x00, 0x0f, 0xac, 0x04, 0x01, 0x00, 0x00, 0x0f,
-    0xac, 0x04, 0x01, 0x00, 0x00, 0x0f, 0xac, 0x02, 0x0c, 0x00, 0x2d, 0x1a, 0x2d, 0x09, 0x17, 0xff,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x3d, 0x16, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, 0x08, 0x01, 0x00,
-    0x00, 0x00, 0x00, 0x40, 0xdd, 0x18, 0x00, 0x50, 0xf2, 0x02, 0x01, 0x01, 0x01, 0x00, 0x03, 0xa4,
-    0x00, 0x00, 0x27, 0xa4, 0x00, 0x00,
-};
-*/
-
 uint8_t beaconFrame_p4[] = {
     0x05, 0x04, 0x00, 0x02, 0x00, 
     0x00, 0x2a, 0x01, 0x04, 0x30, 0x14, 0x01, 0x00, 0x00, 0x0f, 0xac, 0x04, 0x01, 0x00, 0x00, 0x0f,
@@ -41,33 +27,6 @@ uint8_t beaconFrame_p4[] = {
     0x00, 0x00, 0x00,
 };
 
-/*
-80 00 00 00 
-ff ff ff ff ff ff 
-4e 0d fd 41 f0 1f
-4e 0d fd 41 f0 1f 
-
-c0 05 26 23 00 3f 00 00 00 00
-64 00 11 04 00 
-
-12 47 61 6c 61 78 79 20 41 35 33 20 35 47 20 36 36 35 36 
-
-01 08 82 84 8b 96 0c 12
-18 24 32 04 30 48 60 6c 03 01 
-0b 
-
-05 04 00 02 00 
-00 2a 01 04 30 14 01 00 00 0f ac 04 01 00 00 0f
-ac 04 01 00 00 0f ac 02 0c 00 2d 1a 2d 09 17 ff
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-00 00 00 00 00 00 3d 16 0b 00 00 00 00 00 00 00
-00 00 00 00 00 00 00 00 00 00 00 00 00 00 7f 08
-01 00 00 00 00 00 00 40 dd 18 00 50 f2 02 01 01
-01 00 03 a4 00 00 27 a4 00 00 42 43 5e 00 62 32
-2f 00 dd 05 00 16 32 80 00 dd 08 00 50 f2 11 02
-00 00 00
-*/
-
 struct apInfo{
     char* ssid;
     int ssidLen;
@@ -80,6 +39,10 @@ struct apInfo{
     which gives the ability to send raw arbitrary 802.11 frames.
 */
 esp_err_t esp_wifi_80211_tx(wifi_interface_t ifx, const void *buffer, int len, bool en_sys_seq);
+
+// These variables are global so they can be freed from wherever
+struct apInfo* APs;
+char** ssids;
 
 void beaconSpammer(){
     // Read the full command from the host
@@ -104,7 +67,7 @@ void beaconSpammer(){
     // Parse the command
     int ssidCount = 0;
     int ssidArrLen = 10;
-    char** ssids = malloc(ssidArrLen * sizeof(char*));
+    ssids = malloc(ssidArrLen * sizeof(char*));
     char delim[] = {0x03, 0x00};
     char* ssid = strtok(cmd, delim);
     while(ssid != NULL){
@@ -120,21 +83,21 @@ void beaconSpammer(){
     free(cmd);
 
     // Create an array of apInfo structs, one for each SSID
-    struct apInfo* aps = malloc(sizeof(struct apInfo) * ssidCount);
+    APs = malloc(sizeof(struct apInfo) * ssidCount);
     for(int i=0; i<ssidCount; i++){
-        aps[i].ssid = ssids[i];
-        aps[i].ssidLen = strlen(ssids[i]);
+        APs[i].ssid = ssids[i];
+        APs[i].ssidLen = strlen(ssids[i]);
         // Generate a random BSSID
         for(int j=0; j<6; j++){
-            aps[i].bssid[j] = rand() % 256;
+            APs[i].bssid[j] = rand() % 256;
         }
-        aps[i].channel = 11; // The ap_config thing is set to 11, so ill just put them all on 11 for now
+        APs[i].channel = 11; // The ap_config thing is set to 11, so ill just put them all on 11 for now
     }
 
     // For debugging/testing, just print the SSIDs for now:
     printf("AP info:\n");
     for(int i=0; i<ssidCount; i++){
-        printf("SSID: %s, BSSID: %02x:%02x:%02x:%02x:%02x:%02x, Channel: %d\n", aps[i].ssid, aps[i].bssid[0], aps[i].bssid[1], aps[i].bssid[2], aps[i].bssid[3], aps[i].bssid[4], aps[i].bssid[5], aps[i].channel);
+        printf("SSID: %s, BSSID: %02x:%02x:%02x:%02x:%02x:%02x, Channel: %d\n", APs[i].ssid, APs[i].bssid[0], APs[i].bssid[1], APs[i].bssid[2], APs[i].bssid[3], APs[i].bssid[4], APs[i].bssid[5], APs[i].channel);
     }
 
     // Set up the WIFI for sending out beacon frames
@@ -164,35 +127,37 @@ void beaconSpammer(){
     int apIdx = 0;
     while(1){
         // Assemble a beacon frame for the current AP
-        uint8_t frame[256];
+        uint8_t* frame = (uint8_t*)malloc(256*sizeof(uint8_t));
         uint8_t* p = frame;
         memcpy(p, beaconFrame_p1, sizeof(beaconFrame_p1));
         p += sizeof(beaconFrame_p1);
-        memcpy(p, aps[apIdx].bssid, 6);
+        memcpy(p, APs[apIdx].bssid, 6);
         p += 6;
-        memcpy(p, aps[apIdx].bssid, 6);
+        memcpy(p, APs[apIdx].bssid, 6);
         p += 6;
         memcpy(p, beaconFrame_p2, sizeof(beaconFrame_p2));
         p += sizeof(beaconFrame_p2);
-        *p = aps[apIdx].ssidLen;
+        *p = APs[apIdx].ssidLen;
         p++;
-        //memcpy(p, aps[apIdx].ssid, aps[apIdx].ssidLen);
+        //memcpy(p, APs[apIdx].ssid, APs[apIdx].ssidLen);
         // The above line doesnt work, so heres the below line instead:
-        for(int i=0; i<aps[apIdx].ssidLen; i++){
-            *p = aps[apIdx].ssid[i];
+        for(int i=0; i<APs[apIdx].ssidLen; i++){
+            *p = APs[apIdx].ssid[i];
             p++;
         }
         memcpy(p, beaconFrame_p3, sizeof(beaconFrame_p3));
         p += sizeof(beaconFrame_p3);
-        *p = aps[apIdx].channel;
+        *p = APs[apIdx].channel;
         p++;
         memcpy(p, beaconFrame_p4, sizeof(beaconFrame_p4));
         p += sizeof(beaconFrame_p4);
 
         esp_err_t err = esp_wifi_80211_tx(WIFI_IF_AP, frame, p-frame, false);
+        free(frame); // Free the frame memory
         if(err != ESP_OK){
             printf("Error sending beacon frame: %d\r\n", err);
         }
+        // <10ms delay in the loop will cause esp_wifi_80211_tx to fail. Target delay is 100ms between beacons on each AP.
         vTaskDelay(10 / portTICK_PERIOD_MS);
         apIdx = (apIdx+1)%ssidCount;
     }
@@ -202,9 +167,12 @@ void beaconSpammer(){
 TaskHandle_t beaconSpammerTaskHandle;
 
 void runBeaconSpammer(){
-    xTaskCreate(beaconSpammer, "beaconSpammer", 4096, NULL, 5, &beaconSpammerTaskHandle);
+    xTaskCreate(beaconSpammer, "beaconSpammer", 4096*2, NULL, 5, &beaconSpammerTaskHandle);
     while(getchar() != 'q'){ // Wait for 'q' to be sent by host
-        vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms delay reduces cpu usage
+        vTaskDelay(100 / portTICK_PERIOD_MS); // 100ms delay reduces cpu usage
     }
     vTaskDelete(beaconSpammerTaskHandle);
+    // Free the memory malloc'd by beaconSpammer
+    free(ssids);
+    free(APs);
 }
