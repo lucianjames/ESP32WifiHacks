@@ -84,6 +84,7 @@ void SSID_BSSID_SCAN(){
 
         if(beacons++ > 10){
             Serial.write_s('q');
+            return;
         }
     }
 }
