@@ -24,24 +24,16 @@ void beaconSnifferChannelHopper(void* pvParameters) {
 
 TaskHandle_t beaconSnifferTaskHandle;
 
-void stopBeaconSniffer(){
-    esp_wifi_set_promiscuous(false);
-    vTaskDelete(beaconSnifferTaskHandle);
-}
-
-void startBeaconSniffer(){
-    esp_wifi_set_promiscuous_rx_cb(&beaconSnifferCallback);
-    esp_wifi_set_promiscuous(true);
-    xTaskCreate(&beaconSnifferChannelHopper, "beaconSnifferChannelHopper", 2048, NULL, 5, &beaconSnifferTaskHandle);
-}
-
 /*
     Starts the beacon sniffing function, then disables it once 'q' is received from the host
 */
 void runBeaconSniffer(){
-    startBeaconSniffer();
+    esp_wifi_set_promiscuous_rx_cb(&beaconSnifferCallback);
+    esp_wifi_set_promiscuous(true);
+    xTaskCreate(&beaconSnifferChannelHopper, "beaconSnifferChannelHopper", 2048, NULL, 5, &beaconSnifferTaskHandle);
     while(getchar() != 'q'){ // Wait for 'q' to be sent by host
         vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms delay reduces cpu usage
     }
-    stopBeaconSniffer();
+    esp_wifi_set_promiscuous(false);
+    vTaskDelete(beaconSnifferTaskHandle);
 }

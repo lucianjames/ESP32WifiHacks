@@ -39,7 +39,7 @@ void SSID_BSSID_SCAN(){
         // Print hex of beacon frame
         std::cout << "BEACON FRAME HEX:\n";
         for(unsigned char c : beaconFrame){
-            printf("%02X ", c);
+            printf("0x%02X, ", c);
         }
         std::cout << std::endl;
 
@@ -93,24 +93,29 @@ int main(){
     Serial.begin(B115200);
     Serial.setTimeout(10000);
 
+    /*
+    Serial.write_s('s');
+    SSID_BSSID_SCAN();
+    */
+
     std::vector<char> ssidCmd;
 
 
     ssidCmd.push_back('b');
-    std::string testSSID = "testSSID";
+    std::string testSSID = "testSSIDs";
     for(char c : testSSID){
         ssidCmd.push_back(c);
     }
-    ssidCmd.push_back('\0');
+    ssidCmd.push_back(0x03);
 
-    ssidCmd.push_back('\0');
-    testSSID = "among us";
-    for(char c : testSSID){
-        ssidCmd.push_back(c);
+    for(int i=0; i<25; i++){
+        testSSID = "among us-" + std::to_string(i);
+        for(char c : testSSID){
+            ssidCmd.push_back(c);
+        }
+        ssidCmd.push_back(0x03);
     }
-    ssidCmd.push_back('\0');
-
-    ssidCmd.push_back('\n'); // End of command
+    ssidCmd.back() = '\n';
 
     for(auto c : ssidCmd){
         Serial.write_s(c);
