@@ -10,24 +10,30 @@
 #include "beaconSniffer.h"
 #include "beaconSpammer.h"
 
-void app_main(void){
-    // System & WiFi setup
+void setup(){
+    // Init nvs
+	esp_err_t ret = nvs_flash_init();
+	if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+		ESP_ERROR_CHECK(nvs_flash_erase());
+		ret = nvs_flash_init();
+	}
+	ESP_ERROR_CHECK(ret);
 
-    /* Commented out for now, so i can test stuff inside the beacon spam function
-    nvs_flash_init();
+    // Wifi setup
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     esp_wifi_init(&cfg);
     esp_wifi_set_storage(WIFI_STORAGE_RAM);
     esp_wifi_set_mode(WIFI_MODE_NULL);
     esp_wifi_start();
-    esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE);
-    */
+}
+
+void app_main(void){
+    setup(); // wifi + nvs init
 
     // Wait for command from host
     // Commands:
     // 's' - Start beacon sniffing. Exits on 'q'
     // "b<SSID1>0x03<SSID2>0x03<SSIDn>\n" - Start sending out beacons with the given SSIDs. Exits on 'q'
-
     while(1){
         int c = getchar();
         if(c == 's'){
