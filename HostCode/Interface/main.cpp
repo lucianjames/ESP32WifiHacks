@@ -9,25 +9,31 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    // Create class that handles basically everything:
-    ESP32Interface UI(argv[1]);
-
     // ImTui setup:
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImTui::TScreen* screen = ImTui_ImplNcurses_Init(true);
     ImTui_ImplText_Init();
 
+    ESP32Interface UI(argv[1]);
+    UI.testFunc();
+
+    int frames = 0;
     while(!ImGui::IsKeyPressed(27)){ // Exit cleanly if esc pressed
         // Start the frame
         ImTui_ImplNcurses_NewFrame();
         ImTui_ImplText_NewFrame();
         ImGui::NewFrame();
-        
-        /* ... All the important stuff happens here ... */
-        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
-        ImGui::Begin("Hello world");
-        ImGui::Text("World hello");
+
+        UI.update();
+
+        if(frames==1024){
+            UI.testFunc2();
+        }
+
+        ImGui::Begin("Frames");
+        std::string f = std::to_string(frames++);
+        ImGui::Text(f.c_str());
         ImGui::End();
 
         // Render the frame to the terminal

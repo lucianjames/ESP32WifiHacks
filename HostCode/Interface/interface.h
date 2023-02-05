@@ -1,21 +1,33 @@
-#include "ArduinoSerialIO/arduinoSerial.hpp"
+#include "networksList.h"
+#include "beaconSniffer.h"
 
 class ESP32Interface{
 private:
-    arduinoSerial Serial;
-public:
-    ESP32Interface(){ // Default constructor opens sensible defaults :)
-        Serial.openPort("/dev/ttyUSB0");
-        Serial.begin(B115200);
-    }
+    std::string port;
+    int baudrate;
+    networksList networks;
+    beaconSniffer sniffer;
 
-    ESP32Interface(std::string port, int baudrate=B115200){
-        Serial.openPort(port);
-        Serial.begin(baudrate);
+public:
+    ESP32Interface(std::string port="/dev/ttyUSB0", int baudrate=B115200){
+        this->port = port;
+        this->baudrate = baudrate;
+        sniffer.config(&this->networks, port, baudrate);
     }
     
     ~ESP32Interface(){
-        Serial.closePort();
+    }
+
+    void testFunc(){
+        this->sniffer.startSniffer();
+    }
+
+    void testFunc2(){
+        this->sniffer.stopSniffer();
+    }
+
+    void update(){
+        this->networks.draw(0, 0, 0.25, 0.25, ImGuiCond_Once);
     }
 
 };

@@ -77,8 +77,8 @@ void SSID_BSSID_SCAN(){
         std::cout << std::endl;
 
         // Parse the channel from the beacon frame
-        // The channel is stored at byte 12+38+SSID_size+13
-        int channel = beaconFrame[12+38+SSID_size+12];
+        // The channel is stored at byte 38+SSID_size+13
+        int channel = beaconFrame[38+SSID_size+12];
         printf("BEACON ON CHANNEL:\n%d\n", channel);
 
         std::cout << "==END BEACON INFO==" << std::endl;
@@ -119,10 +119,7 @@ int main(){
     Serial.begin(B115200);
     Serial.setTimeout(10000);
 
-    /*
     SSID_BSSID_SCAN();
-    */
-
     
 
     return 0;
