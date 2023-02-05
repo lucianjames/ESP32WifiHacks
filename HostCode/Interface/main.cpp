@@ -16,7 +16,6 @@ int main(int argc, char** argv){
     ImTui_ImplText_Init();
 
     ESP32Interface UI(argv[1]);
-    UI.testFunc();
 
     int frames = 0;
     while(!ImGui::IsKeyPressed(27)){ // Exit cleanly if esc pressed
@@ -26,15 +25,6 @@ int main(int argc, char** argv){
         ImGui::NewFrame();
 
         UI.update();
-
-        if(frames==1024){
-            UI.testFunc2();
-        }
-
-        ImGui::Begin("Frames");
-        std::string f = std::to_string(frames++);
-        ImGui::Text(f.c_str());
-        ImGui::End();
 
         // Render the frame to the terminal
         ImGui::Render();

@@ -27,7 +27,8 @@ public:
     }
 
     void update(){
-        this->networks.draw(0, 0, 0.25, 0.25, ImGuiCond_Once);
+        this->networks.draw(0, 0, 1, 0.25, ImGuiCond_Once);
+        this->sniffer.draw(0, 0.26, 0.25, 0.5, ImGuiCond_Once);
     }
 
 };

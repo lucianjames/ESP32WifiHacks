@@ -12,7 +12,6 @@ private:
     arduinoSerial Serial;
     networksList* networks;
     std::thread snifferThread; // Runs the function that reads the output of the ESP32, parses it, and adds APs to this->networks
-    bool snifferRunning;
 
     void sniffer(){
         this->Serial.write_s('s'); // Tell the ESP32 to start sniffing
@@ -66,6 +65,8 @@ private:
     }
 
 public:
+    bool snifferRunning = false;
+
     ~beaconSniffer(){
         if(this->snifferRunning){
             this->stopSniffer();
@@ -78,6 +79,32 @@ public:
         this->baudrate = baudrate;
         Serial.openPort(port);
         Serial.begin(baudrate);
+    }
+
+    // Draws a menu to turn sniffing on/off
+    void draw(float wStartXNorm,
+              float wStartYNorm,
+              float wEndXNorm,
+              float wEndYNorm,
+              ImGuiCond wCondition=ImGuiCond_Always){
+        uiHelper::setNextWindowSizeNormalised(wStartXNorm,
+                                              wStartYNorm,
+                                              wEndXNorm,
+                                              wEndYNorm,
+                                              wCondition);
+        ImGui::Begin("Beacon sniffer");
+        std::string isRunning = "Sniffer is ";
+        isRunning += this->snifferRunning ? "running" : "not running";
+        ImGui::Text(isRunning.c_str());
+        ImGui::Dummy(ImVec2(0, 2));
+        if(ImGui::Button("Start beacon sniffer") && !this->snifferRunning){
+            this->startSniffer();
+        }
+        ImGui::Dummy(ImVec2(0, 1));
+        if(ImGui::Button("Stop beacon sniffer") && this->snifferRunning){
+            this->stopSniffer();
+        }
+        ImGui::End();
     }
 
     void startSniffer(){
