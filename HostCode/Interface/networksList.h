@@ -68,7 +68,18 @@ public:
     void addAP(std::string SSID,
                unsigned char* BSSID,
                int channel){
+        // Some basic validation:
+        if(channel < 1 || channel > 14){ // If the channel is invalid, the packet is probably corrupt, so definitely dont add it
+            return;
+        }
+        for(auto c : SSID){ // Dont add any APs with non-printable characters in the SSID
+            if(c < 32 || c > 126){
+                return;
+            }
+        }
+
         this->networkMutex.lock();
+
         // Check if the AP already exists in this->networks, if so, just increment its beacon counter
         for(auto& n : this->networks){
             if(n.SSID == SSID){
@@ -77,6 +88,7 @@ public:
                 return;
             }
         }
+
         // Not found, so add it as a new item in the vector
         accessPoint newAP;
         newAP.SSID = SSID;
@@ -90,6 +102,7 @@ public:
         newAP.BSSID_hex.pop_back();
         newAP.channel = channel;
         this->networks.push_back(newAP);
+
         this->networkMutex.unlock();
     }
 };

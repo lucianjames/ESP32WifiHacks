@@ -39,7 +39,6 @@ private:
                 }
             }
             beaconFrame.resize(beaconFrame.size()-14); // Remove "==END BEACON==" from the end of the beacon frame
-        
 
             // Parse BSSID from frame
             // BSSID is 6 bytes long and starts at byte 10
@@ -67,6 +66,12 @@ private:
     }
 
 public:
+    ~beaconSniffer(){
+        if(this->snifferRunning){
+            this->stopSniffer();
+        }
+    }
+
     void config(networksList* networks, std::string port, int baudrate){
         this->networks = networks;
         this->port = port;
@@ -81,7 +86,6 @@ public:
     }
 
     void stopSniffer(){
-        // Kill the sniffer thread
         this->snifferRunning = false;
         this->snifferThread.join();
     }
