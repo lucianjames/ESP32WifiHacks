@@ -12,7 +12,7 @@ private:
     arduinoSerial Serial;
     networksList* networks;
     std::thread snifferThread; // Runs the function that reads the output of the ESP32, parses it, and adds APs to this->networks
-
+    
     void sniffer(){
         this->Serial.write_s('s'); // Tell the ESP32 to start sniffing
         while(this->snifferRunning){
@@ -104,6 +104,8 @@ public:
         if(ImGui::Button("Stop beacon sniffer") && this->snifferRunning){
             this->stopSniffer();
         }
+        ImGui::Dummy(ImVec2(0, 1));
+        ImGui::Checkbox("Enable validation", &this->networks->validationEnabled);
         ImGui::End();
     }
 

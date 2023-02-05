@@ -23,6 +23,8 @@ private:
     int selectedNetwork = 0;
 
 public:
+    bool validationEnabled = true;
+
     void draw(float wStartXNorm,
               float wStartYNorm,
               float wEndXNorm,
@@ -68,13 +70,15 @@ public:
     void addAP(std::string SSID,
                unsigned char* BSSID,
                int channel){
-        // Some basic validation:
-        if(channel < 1 || channel > 14){ // If the channel is invalid, the packet is probably corrupt, so definitely dont add it
-            return;
-        }
-        for(auto c : SSID){ // Dont add any APs with non-printable characters in the SSID
-            if(c < 32 || c > 126){
+        if(this->validationEnabled){
+            // Some basic validation:
+            if(channel < 1 || channel > 14){ // If the channel is invalid, the packet is probably corrupt, so definitely dont add it
                 return;
+            }
+            for(auto c : SSID){ // Dont add any APs with non-printable characters in the SSID
+                if(c < 32 || c > 126){
+                    return;
+                }
             }
         }
 
