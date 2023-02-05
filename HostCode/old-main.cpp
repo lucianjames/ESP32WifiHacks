@@ -6,6 +6,7 @@
 arduinoSerial Serial("/dev/ttyUSB0");
 
 void SSID_BSSID_SCAN(){
+    Serial.write_s('s');
     int beacons = 0;
     while(1){
         std::cout << "Waiting for next beacon frame....\n";
@@ -89,19 +90,8 @@ void SSID_BSSID_SCAN(){
     }
 }
 
-
-int main(){
-    Serial.begin(B115200);
-    Serial.setTimeout(10000);
-
-    /*
-    Serial.write_s('s');
-    SSID_BSSID_SCAN();
-    */
-
+void BEACON_SPAM(){
     std::vector<char> ssidCmd;
-
-
     ssidCmd.push_back('b');
     ssidCmd.push_back(0x03);
     for(int i=0; i<100; i++){
@@ -112,11 +102,9 @@ int main(){
         ssidCmd.push_back(0x03);
     }
     ssidCmd.back() = '\n';
-
     for(auto c : ssidCmd){
         Serial.write_s(c);
     }
-
     // Print whatever the esp sends back
     while(1){
         int byte = Serial.read_s();
@@ -124,6 +112,18 @@ int main(){
             printf("%c", byte);
         }
     }
+}
+
+
+int main(){
+    Serial.begin(B115200);
+    Serial.setTimeout(10000);
+
+    /*
+    SSID_BSSID_SCAN();
+    */
+
+    
 
     return 0;
 }

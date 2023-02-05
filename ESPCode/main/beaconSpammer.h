@@ -161,7 +161,6 @@ void beaconSpammer(){
         vTaskDelay(10 / portTICK_PERIOD_MS);
         apIdx = (apIdx+1)%ssidCount;
     }
-
 }
 
 TaskHandle_t beaconSpammerTaskHandle;

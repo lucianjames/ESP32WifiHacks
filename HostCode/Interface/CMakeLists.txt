@@ -1,0 +1,2 @@
+add_executable(ESP32HacksInterface main.cpp)
+target_link_libraries(ESP32HacksInterface PRIVATE imtui-ncurses)
