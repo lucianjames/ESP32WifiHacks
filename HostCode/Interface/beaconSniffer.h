@@ -12,7 +12,7 @@ private:
     arduinoSerial Serial;
     networksList* networks;
     std::thread snifferThread; // Runs the function that reads the output of the ESP32, parses it, and adds APs to this->networks
-    
+
     void sniffer(){
         this->Serial.write_s('s'); // Tell the ESP32 to start sniffing
         while(this->snifferRunning){
@@ -20,11 +20,13 @@ private:
             std::string s;
             while(s.ends_with("==BEGIN BEACON==") == false){
                 int byte = Serial.read_s();
-                if(byte > 0){
+                if(byte > 0){ // Ignore null bytes and failed reads
                     s += byte;
                     if(s.size() > 33){ // Dont waste memory holding onto useless data
                         s = s.substr(16);
                     }
+                }else{
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10)); // Wait before re-trying. Reduces CPU usage
                 }
             }
 
@@ -35,6 +37,8 @@ private:
                 if(byte != -1){ // Ignore failed reads
                     beaconFrame.push_back(byte);
                     s += beaconFrame.back();
+                }else{
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
             }
             beaconFrame.resize(beaconFrame.size()-14); // Remove "==END BEACON==" from the end of the beacon frame
