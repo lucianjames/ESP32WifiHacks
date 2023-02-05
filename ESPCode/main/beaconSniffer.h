@@ -13,11 +13,11 @@ void beaconSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type) {
 void beaconSnifferChannelHopper(void* pvParameters) {
     int ch = 1;
     while(1) {
-        ch = (ch+1) % 14;
-        esp_wifi_set_promiscuous(false);
-        esp_wifi_set_channel(ch, WIFI_SECOND_CHAN_NONE);
-        esp_wifi_set_promiscuous_rx_cb(&beaconSnifferCallback); // Need to re-set the callback function after disabling promiscuous mode
-        esp_wifi_set_promiscuous(true);
+        ch = ch % 13 + 1; // Cycle through channels 1-13
+        ESP_ERROR_CHECK(esp_wifi_set_promiscuous(false));
+        ESP_ERROR_CHECK(esp_wifi_set_channel(ch, WIFI_SECOND_CHAN_NONE));
+        ESP_ERROR_CHECK(esp_wifi_set_promiscuous_rx_cb(&beaconSnifferCallback)); // Need to re-set the callback function after disabling promiscuous mode
+        ESP_ERROR_CHECK(esp_wifi_set_promiscuous(true));
         vTaskDelay(100 / portTICK_PERIOD_MS); // Wait for 100ms
     }
 }
@@ -28,12 +28,12 @@ TaskHandle_t beaconSnifferTaskHandle;
     Starts the beacon sniffing function, then disables it once 'q' is received from the host
 */
 void runBeaconSniffer(){
-    esp_wifi_set_promiscuous_rx_cb(&beaconSnifferCallback);
-    esp_wifi_set_promiscuous(true);
-    xTaskCreate(&beaconSnifferChannelHopper, "beaconSnifferChannelHopper", 2048, NULL, 5, &beaconSnifferTaskHandle);
+    ESP_ERROR_CHECK(esp_wifi_set_promiscuous_rx_cb(&beaconSnifferCallback));
+    ESP_ERROR_CHECK(esp_wifi_set_promiscuous(true));
+    xTaskCreate(&beaconSnifferChannelHopper, "beaconSnifferChannelHopper", 4096, NULL, 5, &beaconSnifferTaskHandle);
     while(getchar() != 'q'){ // Wait for 'q' to be sent by host
         vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms delay reduces cpu usage
     }
-    esp_wifi_set_promiscuous(false);
+    ESP_ERROR_CHECK(esp_wifi_set_promiscuous(false));
     vTaskDelete(beaconSnifferTaskHandle);
 }
