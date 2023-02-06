@@ -86,7 +86,14 @@ public:
 
         // Check if the AP already exists in this->networks, if so, just increment its beacon counter
         for(auto& n : this->networks){
-            if(n.SSID == SSID){
+            bool BSSIDMatch = true; // Because using pointers, have to go through every element manually to do a comparison
+            for(int i=0; i<6; i++){
+                if(BSSID[i] != n.BSSID[i]){
+                    BSSIDMatch = false;
+                    break;
+                }
+            }
+            if(n.SSID == SSID && BSSIDMatch && n.channel == channel){
                 n.beaconsReceived++;
                 this->networkMutex.unlock();
                 return;
