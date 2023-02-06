@@ -49,6 +49,7 @@ public:
                 networkInfoStrings.push_back(n.SSID + " / " + n.BSSID_hex + " on channel " + std::to_string(n.channel) + ". Received " + std::to_string(n.beaconsReceived) + " beacons");
             }
         }
+        
         this->networkMutex.unlock();
 
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());

@@ -1,6 +1,8 @@
-#pragma
+#pragma once
 
 #include <thread>
+
+#include "imtui/imtui.h"
 
 #include "ArduinoSerialIO/arduinoSerial.hpp"
 #include "networksList.h"
@@ -66,6 +68,7 @@ private:
             this->networks->addAP(SSID, BSSID, channel);
         }
         this->Serial.write_s('q'); // Tells the ESP32 to stop the sniffer function
+        this->Serial.closePort(); // Close the serial connection so some other function can use it
     }
 
 public:
@@ -81,8 +84,6 @@ public:
         this->networks = networks;
         this->port = port;
         this->baudrate = baudrate;
-        Serial.openPort(port);
-        Serial.begin(baudrate);
     }
 
     // Draws a menu to turn sniffing on/off
@@ -101,12 +102,14 @@ public:
         isRunning += this->snifferRunning ? "running" : "not running";
         ImGui::Text(isRunning.c_str());
         ImGui::Dummy(ImVec2(0, 2));
-        if(ImGui::Button("Start beacon sniffer") && !this->snifferRunning){
-            this->startSniffer();
-        }
-        ImGui::Dummy(ImVec2(0, 1));
-        if(ImGui::Button("Stop beacon sniffer") && this->snifferRunning){
-            this->stopSniffer();
+        if(this->snifferRunning){
+            if(ImGui::Button("Stop beacon sniffer")){
+                this->stopSniffer();
+            }
+        }else{
+            if(ImGui::Button("Start beacon sniffer")){
+                this->startSniffer();
+            }   
         }
         ImGui::Dummy(ImVec2(0, 1));
         ImGui::Checkbox("Enable validation", &this->networks->validationEnabled);
@@ -114,6 +117,8 @@ public:
     }
 
     void startSniffer(){
+        this->Serial.openPort(this->port);
+        this->Serial.begin(this->baudrate);
         this->snifferRunning = true;
         this->snifferThread = std::thread(&beaconSniffer::sniffer, this);
     }
