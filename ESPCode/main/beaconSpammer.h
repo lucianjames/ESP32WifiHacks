@@ -57,7 +57,7 @@ void beaconSpammer(){
         }while(c==-1);
         cmd[pos] = c;
         pos++;
-        if(pos >= cmdLen){
+        if(pos >= cmdLen-1){
             cmdLen += 128;
             cmd = (char*)realloc(cmd, cmdLen * sizeof(char));
         }
