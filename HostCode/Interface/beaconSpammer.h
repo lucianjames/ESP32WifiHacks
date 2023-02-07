@@ -31,7 +31,7 @@ private:
         this->Serial.write_s(ssidCmd.data(), ssidCmd.size());
         // Wait until this->spammerRunning is set to false
         while(this->spammerRunning){
-            sleep(0.1);
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
         // Send 'q' to tell the ESP to stop sending out beacon frames
         this->Serial.write_s('q');
