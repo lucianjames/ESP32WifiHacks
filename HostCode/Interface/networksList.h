@@ -117,4 +117,8 @@ public:
 
         this->networkMutex.unlock();
     }
+
+    accessPoint getSelectedAccessPoint(){
+        return this->networks[this->selectedNetwork];
+    }
 };
