@@ -94,12 +94,6 @@ void beaconSpammer(){
         APs[i].channel = 11; // The ap_config thing is set to 11, so ill just put them all on 11 for now
     }
 
-    // For debugging/testing, just print the SSIDs for now:
-    printf("AP info:\n");
-    for(int i=0; i<ssidCount; i++){
-        printf("SSID: %s, BSSID: %02x:%02x:%02x:%02x:%02x:%02x, Channel: %d\n", APs[i].ssid, APs[i].bssid[0], APs[i].bssid[1], APs[i].bssid[2], APs[i].bssid[3], APs[i].bssid[4], APs[i].bssid[5], APs[i].channel);
-    }
-
     // Set up the WIFI for sending out beacon frames
 	ESP_ERROR_CHECK(esp_netif_init());
 	ESP_ERROR_CHECK(esp_event_loop_create_default());
