@@ -23,7 +23,7 @@ private:
         for(auto c : this->target.BSSID){
             deauthCmd.push_back(c);
         }
-        deauthCmd.push  _back(this->target.channel);
+        deauthCmd.push_back(this->target.channel);
         Serial.write_s(deauthCmd.data(), deauthCmd.size());
         // Wait until this->deautherRunning is set to false
         while(this->deautherRunning){
