@@ -9,6 +9,7 @@
 
 #include "beaconSniffer.h"
 #include "beaconSpammer.h"
+#include "deauther.h"
 
 void setup(){
     //Initialize NVS 
@@ -41,6 +42,8 @@ void app_main(void){
         }
         else if(c == 'b'){
             runBeaconSpammer();
+        }else if(c == 'd'){
+            runDeauther();
         }
         vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms delay to reduce CPU usage
     }

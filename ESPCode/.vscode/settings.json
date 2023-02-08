@@ -16,6 +16,13 @@
         "esp_system.h": "c",
         "string.h": "c",
         "freertos.h": "c",
-        "random": "c"
+        "random": "c",
+        "array": "cpp",
+        "fstream": "cpp",
+        "istream": "cpp",
+        "limits": "cpp",
+        "functional": "cpp",
+        "regex": "cpp",
+        "typeinfo": "cpp"
     }
 }

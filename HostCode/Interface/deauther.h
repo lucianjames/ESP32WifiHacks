@@ -17,7 +17,19 @@ private:
     accessPoint target;
 
     void deauth(){
-
+        // Send the deauth command to the ESP
+        std::vector<char> deauthCmd;
+        deauthCmd.push_back('d');
+        for(auto c : this->target.BSSID){
+            deauthCmd.push_back(c);
+        }
+        deauthCmd.push  _back(this->target.channel);
+        Serial.write_s(deauthCmd.data(), deauthCmd.size());
+        // Wait until this->deautherRunning is set to false
+        while(this->deautherRunning){
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        this->Serial.write_s('q'); // Sending 'q' to the ESP will tell it to stop deauthing
     }
 
 public:
@@ -46,8 +58,6 @@ public:
                                               wEndYNorm,
                                               wCondition);
         ImGui::Begin("Deauther");
-        ImGui::Text("NOT IMPLEMENTED DUMMY UI");
-        ImGui::Dummy(ImVec2(0, 2));
         std::string isRunning = "Deauther is ";
         isRunning += this->deautherRunning ? "running" : "not running";
         ImGui::Text(isRunning.c_str());

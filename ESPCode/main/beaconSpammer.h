@@ -83,7 +83,7 @@ void beaconSpammer(){
 			.authmode = WIFI_AUTH_WPA2_PSK,
 			.ssid_hidden = 1,
 			.max_connection = 4,
-			.beacon_interval = 60000
+			.beacon_interval = 100
 		}
 	};
 	ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap_config));
@@ -134,6 +134,8 @@ TaskHandle_t beaconSpammerTaskHandle;
 
 void runBeaconSpammer(){
     xTaskCreate(beaconSpammer, "beaconSpammer", 4096*2, NULL, 5, &beaconSpammerTaskHandle);
+    vTaskDelay(500 / portTICK_PERIOD_MS); // Wait for the task to start
+    // Once we can be sure that the command has been read, its safe to read for the 'q' character
     while(getchar() != 'q'){ // Wait for 'q' to be sent by host
         vTaskDelay(100 / portTICK_PERIOD_MS); // 100ms delay reduces cpu usage
     }
