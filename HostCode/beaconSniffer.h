@@ -100,7 +100,13 @@ public:
         ImGui::Begin("Beacon sniffer");
         std::string isRunning = "Sniffer is ";
         isRunning += this->snifferRunning ? "running" : "not running";
+        if(this->snifferRunning){
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+        }
         ImGui::Text(isRunning.c_str());
+        if(this->snifferRunning){
+            ImGui::PopStyleColor();
+        }
         ImGui::Dummy(ImVec2(0, 2));
         if(this->snifferRunning){
             if(ImGui::Button("Stop beacon sniffer")){

@@ -67,7 +67,13 @@ public:
         ImGui::Begin("Beacon spammer");
         std::string isRunning = "Spammer is ";
         isRunning += this->spammerRunning ? "running" : "not running";
+        if(this->spammerRunning){
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+        }
         ImGui::Text(isRunning.c_str());
+        if(this->spammerRunning){
+            ImGui::PopStyleColor();
+        }
         ImGui::Dummy(ImVec2(0, 2));
         ImGui::Text("SSID to use for APs");
         ImGui::PushItemWidth(-1);

@@ -60,7 +60,13 @@ public:
         ImGui::Begin("Deauther");
         std::string isRunning = "Deauther is ";
         isRunning += this->deautherRunning ? "running" : "not running";
+        if(this->deautherRunning){
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
+        }
         ImGui::Text(isRunning.c_str());
+        if(this->deautherRunning){
+            ImGui::PopStyleColor();
+        }
         ImGui::Dummy(ImVec2(0, 2));
         if(this->deautherRunning){
             if(ImGui::Button("Stop deauthing")){
