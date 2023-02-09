@@ -1,17 +1,19 @@
 #include <stdio.h>
 #include <string.h>
+
 #include "freertos/FreeRTOS.h"
-#include "esp_wifi.h"
-#include "esp_wifi_types.h"
 #include "esp_system.h"
 #include "esp_event.h"
+#include "esp_wifi.h"
+#include "esp_wifi_types.h"
 #include "nvs_flash.h"
 
 #include "beaconSniffer.h"
 #include "beaconSpammer.h"
 #include "deauther.h"
+#include "espFrameSanityCheckHack.h"
 
-void setup(){
+void app_main(void){
     //Initialize NVS 
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -19,17 +21,6 @@ void setup(){
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
-
-    // Wifi setup
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_NULL));
-    ESP_ERROR_CHECK(esp_wifi_start());
-}
-
-void app_main(void){
-    setup(); // wifi + nvs init
 
     // Wait for command from host
     // Commands:

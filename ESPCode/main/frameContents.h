@@ -1,3 +1,5 @@
+#pragma once
+
 /*
     === BEACON FRAME === 
 */
@@ -35,7 +37,7 @@ uint8_t beaconFrame_p4[] = {
 */
 uint8_t deauthFrame_p1[] = {
     0xc0, 0x00, // Frame control
-    0x3a, 0x01, // Duration
+    0x00, 0x00, // Duration
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // Destination MAC address (broadcast)
 };
 // Target AP MAC goes here twice (6x2 bytes)

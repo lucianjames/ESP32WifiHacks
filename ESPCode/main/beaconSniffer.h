@@ -28,6 +28,11 @@ TaskHandle_t beaconSnifferTaskHandle;
     Starts the beacon sniffing function, then disables it once 'q' is received from the host
 */
 void runBeaconSniffer(){
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_NULL));
+    ESP_ERROR_CHECK(esp_wifi_start());
     ESP_ERROR_CHECK(esp_wifi_set_promiscuous_rx_cb(&beaconSnifferCallback));
     ESP_ERROR_CHECK(esp_wifi_set_promiscuous(true));
     xTaskCreate(&beaconSnifferChannelHopper, "beaconSnifferChannelHopper", 4096, NULL, 5, &beaconSnifferTaskHandle);
@@ -36,4 +41,6 @@ void runBeaconSniffer(){
     }
     ESP_ERROR_CHECK(esp_wifi_set_promiscuous(false));
     vTaskDelete(beaconSnifferTaskHandle);
+    ESP_ERROR_CHECK(esp_wifi_stop());
+    ESP_ERROR_CHECK(esp_wifi_deinit());
 }

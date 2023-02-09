@@ -1,3 +1,4 @@
+#include "wifiInit.h"
 #include "frameContents.h"
 
 struct apInfo{
@@ -67,29 +68,6 @@ void beaconSpammer(){
         APs[i].channel = 11; // The ap_config thing is set to 11, so ill just put them all on 11 for now
     }
 
-    // Set up the WIFI for sending out beacon frames
-	ESP_ERROR_CHECK(esp_netif_init());
-	ESP_ERROR_CHECK(esp_event_loop_create_default());
-	esp_netif_create_default_wifi_ap();
-	// Init dummy AP to specify a channel and get WiFi hardware into
-	// a mode where we can send the actual fake beacon frames.
-	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-	wifi_config_t ap_config = {
-		.ap = {
-			.ssid = "a",
-			.ssid_len = 0,
-			.password = "password",
-			.channel = 11,
-			.authmode = WIFI_AUTH_WPA2_PSK,
-			.ssid_hidden = 1,
-			.max_connection = 4,
-			.beacon_interval = 100
-		}
-	};
-	ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap_config));
-	ESP_ERROR_CHECK(esp_wifi_start());
-	ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
-
     // Send the beacon frame every 100ms
     int apIdx = 0;
     while(1){
@@ -133,6 +111,7 @@ void beaconSpammer(){
 TaskHandle_t beaconSpammerTaskHandle;
 
 void runBeaconSpammer(){
+    wifiInit(true);
     xTaskCreate(beaconSpammer, "beaconSpammer", 4096*2, NULL, 5, &beaconSpammerTaskHandle);
     vTaskDelay(500 / portTICK_PERIOD_MS); // Wait for the task to start
     // Once we can be sure that the command has been read, its safe to read for the 'q' character
@@ -143,4 +122,5 @@ void runBeaconSpammer(){
     // Free the memory malloc'd by beaconSpammer
     free(ssids);
     free(APs);
+    wifiDeInit();
 }
