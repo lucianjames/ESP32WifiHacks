@@ -1,6 +1,3 @@
-[submodule "HostCode/imtui-tweaks"]
-	path = HostCode/imtui-tweaks
-	url = https://www.github.com/lj3d/imtui-tweaks
 [submodule "HostCode/Interface/ArduinoSerialIO"]
 	path = HostCode/Interface/ArduinoSerialIO
 	url = https://www.github.com/lj3d/ArduinoSerialIO
