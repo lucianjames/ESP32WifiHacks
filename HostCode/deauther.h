@@ -27,7 +27,11 @@ private:
         Serial.write_s(deauthCmd.data(), deauthCmd.size());
         // Wait until this->deautherRunning is set to false
         while(this->deautherRunning){
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            // Print anything the ESP sends (for debugging purposes)
+            int c = this->Serial.read_s();
+            if(c != -1 && (c >= 32 && c <= 126 || c == '\n')){
+                std::cout << (char)c;
+            }
         }
         this->Serial.write_s('q'); // Sending 'q' to the ESP will tell it to stop deauthing
     }
