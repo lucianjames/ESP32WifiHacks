@@ -8,12 +8,12 @@ void wifiInit(bool promiscuous){
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
 	wifi_config_t ap_config = {
 		.ap = {
-			.ssid = "a",
-			.ssid_len = 1,
-			.password = "password",
+			.ssid = " ",
+			.ssid_len = 0,
+			.password = "7fd6v24sg",
 			.channel = 11,
 			.authmode = WIFI_AUTH_WPA2_PSK,
-			.ssid_hidden = 0,
+			.ssid_hidden = 1,
 			.max_connection = 4,
 			.beacon_interval = 100
 		}
