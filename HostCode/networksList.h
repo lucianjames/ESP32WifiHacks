@@ -4,7 +4,7 @@
 #include <string>
 #include <mutex>
 
-#include "imtui/imtui.h"
+#include <imgui.h>
 
 #include "uiHelper.h"
 
@@ -51,8 +51,7 @@ public:
         }
         
         this->networkMutex.unlock();
-
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+        ImGui::PushItemWidth(-1);
         ImGui::ListBox("##Networks",
                        &this->selectedNetwork,
                        [](void* data, int idx, const char** out_text){
@@ -64,6 +63,7 @@ public:
                        networkInfoStrings.size(),
                        networkInfoStrings.size()
         );
+        ImGui::PopItemWidth();
 
         ImGui::End();
     }

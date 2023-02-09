@@ -2,7 +2,7 @@
 
 #include <thread>
 
-#include "imtui/imtui.h"
+#include <imgui.h>
 
 #include "ArduinoSerialIO/arduinoSerial.hpp"
 #include "uiHelper.h"
@@ -70,12 +70,12 @@ public:
         ImGui::Text(isRunning.c_str());
         ImGui::Dummy(ImVec2(0, 2));
         ImGui::Text("SSID to use for APs");
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+        ImGui::PushItemWidth(-1);
         ImGui::InputText("##SSID", this->SSID, 33);
         ImGui::Dummy(ImVec2(0, 1));
         ImGui::Text("Number of APs to create");
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
         ImGui::InputInt("##APCount", &this->APCount, 0, 0, 0);
+        ImGui::PopItemWidth();
         ImGui::Dummy(ImVec2(0, 2));
         if(this->spammerRunning){
             if(ImGui::Button("Stop beacon spam")){
