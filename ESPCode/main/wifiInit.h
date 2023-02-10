@@ -27,4 +27,6 @@ void wifiInit(bool promiscuous){
 void wifiDeInit(){
     ESP_ERROR_CHECK(esp_wifi_stop());
     ESP_ERROR_CHECK(esp_wifi_deinit());
+	ESP_ERROR_CHECK(esp_event_loop_delete_default());
+	ESP_ERROR_CHECK(esp_wifi_set_promiscuous(false));
 }
