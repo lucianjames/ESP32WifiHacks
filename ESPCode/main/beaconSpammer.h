@@ -8,6 +8,8 @@ struct apInfo{
     uint8_t bssid[6];
 };
 
+#define BEACON_SEND_N 4 // Experimental, send 4 frames in a row for each "AP", seems to cause the AP to get picked up better
+
 /*
     This declaration gives access to the esp_wifi_80211_tx function,
     which gives the ability to send raw arbitrary 802.11 frames.
@@ -97,13 +99,14 @@ void beaconSpammer(){
         memcpy(p, beaconFrame_p4, sizeof(beaconFrame_p4));
         p += sizeof(beaconFrame_p4);
 
-        esp_err_t err = esp_wifi_80211_tx(WIFI_IF_AP, frame, p-frame, false);
-        free(frame); // Free the frame memory
-        if(err != ESP_OK){
-            printf("Error sending beacon frame: %d\r\n", err);
+        for(int i=0; i<BEACON_SEND_N; i++){
+            esp_err_t err = esp_wifi_80211_tx(WIFI_IF_AP, frame, p-frame, false);
+            if(err != ESP_OK){
+                printf("Error sending beacon frame: %d\r\n", err);
+            }
         }
-        // <10ms delay in the loop will cause esp_wifi_80211_tx to fail. Target delay is 100ms between beacons on each AP.
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        free(frame); // Free the frame memory
+        vTaskDelay(10 / portTICK_PERIOD_MS); // Chaning this from 10 to 9 causes it to not work. Fun :)
         apIdx = (apIdx+1)%ssidCount;
     }
 }
