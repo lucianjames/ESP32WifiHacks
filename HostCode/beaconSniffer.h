@@ -23,6 +23,9 @@ private:
             while(s.ends_with("==BEGIN BEACON==") == false){
                 int byte = Serial.read_s();
                 if(byte > 0){ // Ignore null bytes and failed reads
+                    if(byte >= 32 && byte <= 126 || byte == '\n'){
+                        std::cout << (char)byte; // Useful for getting debug info
+                    }
                     s += byte;
                     if(s.size() > 33){ // Dont waste memory holding onto useless data
                         s = s.substr(16);
