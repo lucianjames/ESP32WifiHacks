@@ -1,12 +1,19 @@
 void beaconSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type) {
     wifi_promiscuous_pkt_t* pkt = (wifi_promiscuous_pkt_t*)buf; // Cast the void type into an actual usable packet type
+
     if(pkt->payload[0] == 0x80){
         printf("==BEGIN BEACON==");
-        // Print the packet as hex
         for(int i=0; i<pkt->rx_ctrl.sig_len; i++) {
             printf("%c", pkt->payload[i]);
         }
         printf("==END BEACON==");
+    }
+    if(pkt->payload[0] == 0x88 || pkt->payload[0] == 0x08){
+        printf("==BEGIN TRAFFIC INFO==");
+        for(int i=10; i<=21; i++){ // Send the destination and source MAC addresses to the host
+            printf("%c", pkt->payload[i]);
+        }
+        printf("==END TRAFFIC INFO==");
     }
 }
 

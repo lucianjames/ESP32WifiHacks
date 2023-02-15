@@ -1,3 +1,7 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/ESPCode"
+    "cmake.sourceDirectory": "${workspaceFolder}/ESPCode",
+    "files.associations": {
+        "array": "cpp",
+        "string_view": "cpp"
+    }
 }
