@@ -135,7 +135,7 @@ public:
                                               wEndXNorm,
                                               wEndYNorm,
                                               wCondition);
-        ImGui::Begin("Beacon sniffer");
+        ImGui::Begin("Network sniffer");
         std::string isRunning = "Sniffer is ";
         isRunning += this->snifferRunning ? "running" : "not running";
         if(this->snifferRunning){
@@ -147,11 +147,11 @@ public:
         }
         ImGui::Dummy(ImVec2(0, 2));
         if(this->snifferRunning){
-            if(ImGui::Button("Stop beacon sniffer")){
+            if(ImGui::Button("Stop sniffer")){
                 this->stopSniffer();
             }
         }else{
-            if(ImGui::Button("Start beacon sniffer")){
+            if(ImGui::Button("Start sniffer")){
                 this->startSniffer();
             }   
         }

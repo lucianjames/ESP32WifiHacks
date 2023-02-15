@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <mutex>
+#include <algorithm>
 
 #include <imgui.h>
 
@@ -64,9 +65,22 @@ public:
             trafficInfoStrings.push_back("No traffic discovered");
         }else{
             for(auto t : this->traffic){
-                trafficInfoStrings.push_back(t.SRC_BSSID_hex + " -> " + t.DST_BSSID_hex + " (" + std::to_string(t.count) + " packets detected)");
+                std::string srcBSSID = t.SRC_BSSID_hex;
+                std::string dstBSSID = t.DST_BSSID_hex;
+                for(auto n : this->networks){
+                    if(t.SRC_BSSID_hex == n.BSSID_hex){
+                        srcBSSID += " (" + n.SSID + ")";
+                    }
+                    if(t.DST_BSSID_hex == n.BSSID_hex){
+                        dstBSSID += " (" + n.SSID + ")";
+                    }
+                }
+                trafficInfoStrings.push_back(srcBSSID + " -> " + dstBSSID + " (" + std::to_string(t.count) + " packets detected)");
             }
         }
+
+        std::sort(networkInfoStrings.begin(), networkInfoStrings.end());
+        std::sort(trafficInfoStrings.begin(), trafficInfoStrings.end());
         
         this->netInfoMutex.unlock();
         ImGui::Text("Networks");
