@@ -11,6 +11,7 @@ class deauther{
 private:
     std::string port;
     int baudrate;
+    int selectedTraffic = 0;
     arduinoSerial Serial;
     networksList* networks;
     std::thread deautherThread;
@@ -73,14 +74,38 @@ public:
         }
         ImGui::Dummy(ImVec2(0, 2));
         if(this->deautherRunning){
-            if(ImGui::Button("Stop deauthing")){
+            if(ImGui::Button("Stop deauthing broadcast")){
                 this->stopDeauther();
             }
         }else{
-            if(ImGui::Button("Start deauthing selected network")){
+            if(ImGui::Button("Start deauthing selected network (to broadcast)")){
                 this->startDeauther();
             }
         }
+
+        std::vector<netConnection> traffic = this->networks->getSelectedTraffic();
+        std::vector<std::string> trafficStrings;
+        for(auto t : traffic){
+            trafficStrings.push_back(t.BSSID_hex);
+        }
+        ImGui::Dummy(ImVec2(0, 2));
+        ImGui::Text("MAC addresses detected using the selected network:");
+        ImGui::PushItemWidth(-1);
+        ImGui::ListBox("##Traffic",
+                    &this->selectedTraffic,
+                    [](void* data, int idx, const char** out_text){
+                        std::vector<std::string>* trafficStrPointer = (std::vector<std::string>*)data; // Convert the void* data to its actual type
+                        *out_text = trafficStrPointer->at(idx).c_str();
+                        return true;
+                    },
+                    (void*)&trafficStrings,
+                    trafficStrings.size(),
+                    trafficStrings.size()
+        );
+        ImGui::PopItemWidth();
+
+        ImGui::Button("Deauth selected network (targeting displayed MAC addresses)");
+
         ImGui::End();
     }
 

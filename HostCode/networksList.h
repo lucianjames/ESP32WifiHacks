@@ -25,6 +25,11 @@ struct trafficInfo{
     int count = 1;
 };
 
+struct netConnection{
+    unsigned char BSSID[6];
+    std::string BSSID_hex;
+};
+
 class networksList{
 private:
     std::vector<accessPoint> networks;
@@ -211,5 +216,32 @@ public:
 
     accessPoint getSelectedAccessPoint(){
         return this->networks[this->selectedNetwork];
+    }
+
+    // Get all MAC addresses that have been seen using the selected AP
+    std::vector<netConnection> getSelectedTraffic(){
+        std::vector<netConnection> v;
+        for(auto t : this->traffic){
+            bool srcMatch = true;
+            bool dstMatch = true;
+            for(int i=0; i<6; i++){
+                if(t.SRC_BSSID[i] != this->networks[this->selectedNetwork].BSSID[i]){
+                    srcMatch = false;
+                }
+                if(t.DST_BSSID[i] != this->networks[this->selectedNetwork].BSSID[i]){
+                    dstMatch = false;
+                }
+            }
+
+            if(srcMatch){
+                netConnection newConnection;
+                for(int i=0; i<6; i++){
+                    newConnection.BSSID[i] = t.DST_BSSID[i];
+                }
+                newConnection.BSSID_hex = t.DST_BSSID_hex;
+                v.push_back(newConnection);
+            }
+        }
+        return v;
     }
 };
