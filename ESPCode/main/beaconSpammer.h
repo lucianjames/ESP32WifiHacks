@@ -1,5 +1,6 @@
 #include "wifiInit.h"
 #include "frameContents.h"
+#include "esp_log.h"
 
 struct apInfo{
     char* ssid;
@@ -23,7 +24,7 @@ char** ssids;
 void beaconSpammer(){
     // Read the full command from the host
     // This will give a list of SSIDs to spam
-    int cmdLen = 128;
+    int cmdLen = 256;
     char* cmd = (char*)malloc(cmdLen * sizeof(char));
     int pos = 0;
     int c = 0;
@@ -34,7 +35,7 @@ void beaconSpammer(){
         cmd[pos] = c;
         pos++;
         if(pos >= cmdLen-1){
-            cmdLen += 128;
+            cmdLen += 256;
             cmd = (char*)realloc(cmd, cmdLen * sizeof(char));
         }
     }
@@ -61,6 +62,7 @@ void beaconSpammer(){
     // Create an array of apInfo structs, one for each SSID
     APs = malloc(sizeof(struct apInfo) * ssidCount);
     for(int i=0; i<ssidCount; i++){
+        ESP_LOGI("beaconSpammer", "SSID %d: %s", i, ssids[i]);
         APs[i].ssid = ssids[i];
         APs[i].ssidLen = strlen(ssids[i]);
         // Generate a random BSSID
@@ -70,7 +72,6 @@ void beaconSpammer(){
         APs[i].channel = 11; // The ap_config thing is set to 11, so ill just put them all on 11 for now
     }
 
-    // Send the beacon frame every 100ms
     int apIdx = 0;
     while(1){
         // Assemble a beacon frame for the current AP
@@ -106,7 +107,7 @@ void beaconSpammer(){
             }
         }
         free(frame); // Free the frame memory
-        vTaskDelay(10 / portTICK_PERIOD_MS); // Chaning this from 10 to 9 causes it to not work. Fun :)
+        vTaskDelay(10 / portTICK_PERIOD_MS); // Changing this from 10 to 9 causes it to not work. Fun :)
         apIdx = (apIdx+1)%ssidCount;
     }
 }

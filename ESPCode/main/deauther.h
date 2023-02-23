@@ -1,3 +1,4 @@
+#include "esp_log.h"
 #include "wifiInit.h"
 #include "frameContents.h"
 
@@ -25,6 +26,9 @@ void deauther(){
     do{
         channel = getchar();
     }while(channel==-1);
+
+    ESP_LOGI("deauther", "Target BSSID: %02x:%02x:%02x:%02x:%02x:%02x", targetBSSID[0], targetBSSID[1], targetBSSID[2], targetBSSID[3], targetBSSID[4], targetBSSID[5]);
+    ESP_LOGI("deauther", "Channel: %d", channel);
 
     // Assemble the deauth frame
     frame = (uint8_t*)malloc(26);

@@ -28,7 +28,14 @@ private:
             ssidCmd.push_back(0x03);
         }
         ssidCmd.back() = '\n'; // Replace last 0x03 with '\n'
-        this->Serial.write_s(ssidCmd.data(), ssidCmd.size());
+
+        for(auto c : ssidCmd){
+            this->Serial.write_s(c);
+            // Sleep for a little bit to allow the ESP to process the command
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+
+
         // Wait until this->spammerRunning is set to false
         while(this->spammerRunning){
             // Print anything the ESP sends (for debugging purposes)

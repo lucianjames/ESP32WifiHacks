@@ -88,7 +88,7 @@ int main(int argc, char *argv[]){
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    auto window = glfwCreateWindow(800, 600, "Example", nullptr, nullptr);
+    auto window = glfwCreateWindow(900, 900, "ESP32WifiHacks", nullptr, nullptr);
     if(!window){
         throw std::runtime_error("Error creating glfw window");
     }
