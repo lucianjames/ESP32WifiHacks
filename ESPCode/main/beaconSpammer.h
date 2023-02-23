@@ -116,7 +116,7 @@ TaskHandle_t beaconSpammerTaskHandle;
 
 void runBeaconSpammer(){
     wifiInit(true);
-    xTaskCreate(beaconSpammer, "beaconSpammer", 4096*2, NULL, 5, &beaconSpammerTaskHandle);
+    xTaskCreate(beaconSpammer, "beaconSpammer", 4096*4, NULL, 5, &beaconSpammerTaskHandle);
     vTaskDelay(500 / portTICK_PERIOD_MS); // Wait for the task to start
     // Once we can be sure that the command has been read, its safe to read for the 'q' character
     while(getchar() != 'q'){ // Wait for 'q' to be sent by host

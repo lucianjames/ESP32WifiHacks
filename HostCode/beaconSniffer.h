@@ -170,5 +170,6 @@ public:
     void stopSniffer(){
         this->snifferRunning = false;
         this->snifferThread.join();
+        this->Serial.closePort();
     }
 };
