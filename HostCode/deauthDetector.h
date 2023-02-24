@@ -1,9 +1,12 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
 #include <thread>
 
 #include <imgui.h>
+
+#include "ArduinoSerialIO/arduinoSerial.hpp"
 
 struct deauthInfo{
     unsigned char DST[6];
@@ -19,6 +22,35 @@ private:
     std::vector<deauthInfo> deauths;
     std::thread detectorThread;
 
+    void bruh(){
+        // Read bytes until "==DEAUTH INFO END==" is found
+        std::string s;
+        std::vector<unsigned char> bytes;
+        while(!s.ends_with("==END DEAUTH INFO==")){
+            int byte = Serial.read_s();
+            if(byte != -1){ // Ignore failed reads
+                bytes.push_back(byte);
+                s += bytes.back();
+            }else{
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+        }
+        bytes.resize(bytes.size()-19); // Remove "==DEAUTH INFO END==" from the end of the deauth info
+        
+        /*
+            Deauth info format:
+            6 BYTES: DESTINATION
+            6 BYTES: AP MAC
+        */
+        struct deauthInfo deauthFrame;
+        std::cout << "\n\n==== TESTING ====" << std::endl;
+        for(auto b : bytes){
+            std::cout << std::hex << (int)b << ":";
+        }
+        std::cout << "\n=================" << std::endl;
+    }
+
+
     void detector(){
         this->Serial.write_s('t');
         std::string s;
@@ -30,35 +62,7 @@ private:
                 }
                 s += byte;
                 if(s.ends_with("==BEGIN DEAUTH INFO==")){
-                    // Read bytes until "==DEAUTH INFO END==" is found
-                    std::string s;
-                    std::vector<unsigned char> bytes;
-                    while(!s.ends_with("==END DEAUTH INFO==")){
-                        int byte = Serial.read_s();
-                        if(byte != -1){ // Ignore failed reads
-                            bytes.push_back(byte);
-                            s += bytes.back();
-                        }else{
-                            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                        }
-                    }
-                    bytes.resize(bytes.size()-19); // Remove "==DEAUTH INFO END==" from the end of the deauth info
-                    
-                    /*
-                        Deauth info format:
-                        6 BYTES: DESTINATION
-                        6 BYTES: AP MAC
-                    */
-                    struct deauthInfo deauthFrame;
-                    std::cout << "==== TESTING ====" << std::endl;
-                    for(int i=0; i<6; i++){
-                        deauthFrame.DST[i] = bytes[i];
-                        std::cout << std::hex() << deauthFrame.DST[i] << ":";
-                        deauthFrame.AP[i+6] = bytes[i+6];
-                    }
-                    std::cout << "=================" << std::endl;
-
-                    
+                    bruh();
                     s.clear();
                 }
                 if(s.size() > 64){

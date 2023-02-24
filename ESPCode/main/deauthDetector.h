@@ -2,7 +2,7 @@ void deauthDetectorCallback(void* buf, wifi_promiscuous_pkt_type_t type){
     wifi_promiscuous_pkt_t* pkt = (wifi_promiscuous_pkt_t*)buf;
     if(pkt->payload[0] == 0xC0){
         printf("==BEGIN DEAUTH INFO==");
-        for(int i=4; i<=10; i++){ // Send the destination MAC
+        for(int i=4; i<16; i++){
             printf("%c", pkt->payload[i]);
         }
         printf("==END DEAUTH INFO==");
