@@ -21,7 +21,7 @@ public:
         this->sniffer.config(&this->networks, port, baudrate);
         this->spammer.config(port, baudrate);
         this->deauth.config(&this->networks, port, baudrate);
-        this->deauthDetect.config(port, baudrate);
+        this->deauthDetect.config(&this->networks, port, baudrate);
     }
     
     ~ESP32Interface(){

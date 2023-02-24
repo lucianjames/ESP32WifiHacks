@@ -8,21 +8,15 @@
 
 #include "ArduinoSerialIO/arduinoSerial.hpp"
 
-struct deauthInfo{
-    unsigned char DST[6];
-    unsigned char AP[6];
-    int count = 1;
-};
-
 class deauthDetector{
 private:
     std::string port;
     int baudrate;
     arduinoSerial Serial;
-    std::vector<deauthInfo> deauths;
+    networksList* networks;
     std::thread detectorThread;
 
-    void bruh(){
+    void readParseDeauth(){
         // Read bytes until "==DEAUTH INFO END==" is found
         std::string s;
         std::vector<unsigned char> bytes;
@@ -42,12 +36,14 @@ private:
             6 BYTES: DESTINATION
             6 BYTES: AP MAC
         */
-        struct deauthInfo deauthFrame;
-        std::cout << "\n\n==== TESTING ====" << std::endl;
-        for(auto b : bytes){
-            std::cout << std::hex << (int)b << ":";
+        unsigned char* DST = new unsigned char[6];
+        unsigned char* AP = new unsigned char[6];
+        for(int i=0; i<6; i++){
+            DST[i] = bytes[i];
+            AP[i] = bytes[i+6];
         }
-        std::cout << "\n=================" << std::endl;
+
+        this->networks->addDeauth(DST, AP);
     }
 
 
@@ -62,7 +58,7 @@ private:
                 }
                 s += byte;
                 if(s.ends_with("==BEGIN DEAUTH INFO==")){
-                    bruh();
+                    this->readParseDeauth();
                     s.clear();
                 }
                 if(s.size() > 64){
@@ -72,12 +68,14 @@ private:
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         }
+        this->Serial.write_s('q');
     }
 
 public:
     bool detectorRunning = false;
 
-    void config(std::string port, int baudrate){
+    void config(networksList* networks, std::string port, int baudrate){
+        this->networks = networks;
         this->port = port;
         this->baudrate = baudrate;
     }
@@ -112,8 +110,6 @@ public:
                 this->startDetector();
             }
         }
-        ImGui::Dummy(ImVec2(0, 1));
-        ImGui::Text("Listbox goes here");
         ImGui::End();
     }
 
@@ -127,6 +123,5 @@ public:
     void stopDetector(){
         this->detectorRunning = false;
         this->detectorThread.join();
-        this->Serial.closePort();
     }
 };
