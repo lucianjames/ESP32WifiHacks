@@ -7,6 +7,8 @@
 #include "ArduinoSerialIO/arduinoSerial.hpp"
 #include "uiHelper.h"
 
+#define sendCmdDelayMS 6
+
 class beaconSpammer{
 private:
     std::string port;
@@ -37,7 +39,7 @@ private:
         for(auto c : ssidCmd){
             this->Serial.write_s(c);
             // Sleep for a little bit to allow the ESP to process the command
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(sendCmdDelayMS));
         }
 
 
@@ -68,7 +70,7 @@ private:
         for(auto c : ssidCmd){
             this->Serial.write_s(c);
             // Sleep for a little bit to allow the ESP to process the command
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(sendCmdDelayMS));
         }
 
         // Wait until this->spammerRunning is set to false
