@@ -15,6 +15,13 @@ void beaconSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type) {
         }
         printf("==END TRAFFIC INFO==");
     }
+    if(pkt->payload[0] == 0xC0){
+        printf("==BEGIN DEAUTH INFO==");
+        for(int i=4; i<16; i++){
+            printf("%c", pkt->payload[i]);
+        }
+        printf("==END DEAUTH INFO==");
+    }
 }
 
 void beaconSnifferChannelHopper(void* pvParameters) {

@@ -25,13 +25,36 @@ struct trafficInfo{
     int count = 1;
 };
 
+struct deauthInfo{
+    std::string DST_hex;
+    std::string AP_hex;
+    unsigned char DST[6];
+    unsigned char AP[6];
+    int count = 1;
+};
+
 class networksList{
 private:
     std::vector<accessPoint> networks;
     std::vector<trafficInfo> traffic;
+    std::vector<deauthInfo> deauths;
     std::mutex netInfoMutex; // Because another thread is going to be calling addAP()
     int selectedNetwork = 0;
     int selectedTraffic = 0;
+
+    // Used for creating nice readable MAC addresses in the UI:
+    template<typename T>
+    std::string charBufToHexStr(T buf, int n){
+        std::string hexStr;
+        for(int i=0; i<n; i++){
+            char hex[2];
+            sprintf(hex, "%02x", buf[i]);
+            hexStr += hex;
+            hexStr += ":";
+        }
+        hexStr.pop_back();
+        return hexStr;
+    }
 
 public:
     bool validationEnabled = true;
@@ -78,6 +101,24 @@ public:
                 trafficInfoStrings.push_back(srcBSSID + " -> " + dstBSSID + " (" + std::to_string(t.count) + " packets detected)");
             }
         }
+        std::vector<std::string> deauthInfoStrings;
+        if(this->deauths.size() == 0){
+            deauthInfoStrings.push_back("No deauths discovered");
+        }else{
+            for(auto d : this->deauths){
+                std::string dstBSSID = d.DST_hex;
+                std::string apBSSID = d.AP_hex;
+                for(auto n : this->networks){
+                    if(d.DST_hex == n.BSSID_hex){
+                        dstBSSID += " (" + n.SSID + ")";
+                    }
+                    if(d.AP_hex == n.BSSID_hex){
+                        apBSSID += " (" + n.SSID + ")";
+                    }
+                }
+                deauthInfoStrings.push_back(dstBSSID + " deauthed by " + apBSSID + " (" + std::to_string(d.count) + " deauths detected)");
+            }
+        }
 
         std::sort(networkInfoStrings.begin(), networkInfoStrings.end());
         std::sort(trafficInfoStrings.begin(), trafficInfoStrings.end());
@@ -109,6 +150,20 @@ public:
                     (void*)&trafficInfoStrings,
                     trafficInfoStrings.size(),
                     trafficInfoStrings.size()
+        );
+        ImGui::PopItemWidth();
+        ImGui::Text("Deauths (0xc0 frames)");
+        ImGui::PushItemWidth(-1);
+        ImGui::ListBox("##Deauths",
+                    &this->selectedTraffic,
+                    [](void* data, int idx, const char** out_text){
+                        std::vector<std::string>* deauthStrPointer = (std::vector<std::string>*)data; // Convert the void* data to its actual type
+                        *out_text = deauthStrPointer->at(idx).c_str();
+                        return true;
+                    },
+                    (void*)&deauthInfoStrings,
+                    deauthInfoStrings.size(),
+                    deauthInfoStrings.size()
         );
         ImGui::PopItemWidth();
         ImGui::End();
@@ -150,14 +205,8 @@ public:
         // Not found, so add it as a new item in the vector
         accessPoint newAP;
         newAP.SSID = SSID;
-        for(int i=0; i<6; i++){
-            newAP.BSSID[i] = BSSID[i];
-            char hex[2];
-            sprintf(hex, "%02x", BSSID[i]);
-            newAP.BSSID_hex += hex;
-            newAP.BSSID_hex += ":";
-        }
-        newAP.BSSID_hex.pop_back();
+        memcpy(newAP.BSSID, BSSID, 6);
+        newAP.BSSID_hex = charBufToHexStr(newAP.BSSID, 6);
         newAP.channel = channel;
         this->networks.push_back(newAP);
 
@@ -191,20 +240,48 @@ public:
 
         // Not found, so create new struct and add to this->networks
         trafficInfo newTraffic;
-        for(int i=0; i<6; i++){
-            newTraffic.SRC_BSSID[i] = SRC_BSSID[i];
-            newTraffic.DST_BSSID[i] = DST_BSSID[i];
-            char hex[2];
-            sprintf(hex, "%02x", SRC_BSSID[i]);
-            newTraffic.SRC_BSSID_hex += hex;
-            newTraffic.SRC_BSSID_hex += ":";
-            sprintf(hex, "%02x", DST_BSSID[i]);
-            newTraffic.DST_BSSID_hex += hex;
-            newTraffic.DST_BSSID_hex += ":";
-        }
-        newTraffic.DST_BSSID_hex.pop_back();
-        newTraffic.SRC_BSSID_hex.pop_back();
+
+        memcpy(newTraffic.SRC_BSSID, SRC_BSSID, 6);
+        memcpy(newTraffic.DST_BSSID, DST_BSSID, 6);
+        newTraffic.SRC_BSSID_hex = charBufToHexStr(newTraffic.SRC_BSSID, 6);
+        newTraffic.DST_BSSID_hex = charBufToHexStr(newTraffic.DST_BSSID, 6);
         this->traffic.push_back(newTraffic);
+
+        this->netInfoMutex.unlock();
+    }
+
+    void addDeauth(unsigned char* DST,
+                   unsigned char* AP){
+        this->netInfoMutex.lock();
+
+        // Check if an entry already exists
+        for(auto& t : this->deauths){
+            bool dstMatch = true;
+            bool apMatch = true;
+            for(int i=0; i<6; i++){
+                if(t.DST[i] != DST[i]){
+                    dstMatch = false;
+                    break;
+                }
+                if(t.AP[i] != AP[i]){
+                    apMatch = false;
+                    break;
+                }
+            }
+            if(dstMatch && apMatch){
+                t.count++;
+                this->netInfoMutex.unlock();
+                return;
+            }
+        }
+
+        // Not found, so add to this->deauths
+        deauthInfo newDeauth;
+        memcpy(newDeauth.DST, DST, 6);
+        memcpy(newDeauth.AP, AP, 6);
+        newDeauth.DST_hex = charBufToHexStr(newDeauth.DST, 6);
+        newDeauth.AP_hex = charBufToHexStr(newDeauth.AP, 6);
+        this->deauths.push_back(newDeauth);
 
         this->netInfoMutex.unlock();
     }

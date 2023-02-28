@@ -15,21 +15,25 @@ private:
     networksList* networks;
     std::thread snifferThread; // Runs the function that reads the output of the ESP32, parses it, and adds APs to this->networks
 
-
-    void readParseBeacon(){
-        // Now read all the bytes until "==END BEACON==" is found
+    std::vector<unsigned char> readUntilStr(std::string term){
         std::string s;
-        std::vector<unsigned char> beaconFrame;
-        while(!s.ends_with("==END BEACON==")){
-            int byte = Serial.read_s();
+        std::vector<unsigned char> bytes;
+        while(!s.ends_with(term)){
+            int byte = this->Serial.read_s();
             if(byte != -1){ // Ignore failed reads
-                beaconFrame.push_back(byte);
-                s += beaconFrame.back();
+                bytes.push_back(byte);
+                s += (unsigned char)byte;
             }else{
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         }
-        beaconFrame.resize(beaconFrame.size()-14); // Remove "==END BEACON==" from the end of the beacon frame
+        bytes.resize(bytes.size()-term.size());
+        return bytes;
+    }
+
+    void readParseBeacon(){
+        // Now read all the bytes until "==END BEACON==" is found
+        std::vector<unsigned char> beaconFrame = this->readUntilStr("==END BEACON==");
 
         // Parse BSSID from frame
         // BSSID is 6 bytes long and starts at byte 10
@@ -56,18 +60,8 @@ private:
 
     void readParseTrafficInfo(){
         // Read all bytes until "==END TRAFFIC INFO==" is found
-        std::string s;
-        std::vector<unsigned char> trafficInfo;
-        while(!s.ends_with("==END TRAFFIC INFO==")){
-            int byte = Serial.read_s();
-            if(byte != -1){ // Ignore failed reads
-                trafficInfo.push_back(byte);
-                s += trafficInfo.back();
-            }else{
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
-        }
-        trafficInfo.resize(trafficInfo.size()-18); // Remove "==END TRAFFIC INFO==" from the end of the traffic info
+        std::vector<unsigned char> trafficInfo = this->readUntilStr("==END TRAFFIC INFO==");
+
         // Format of the traffic info:
         // <SOURCE MAC (6 bytes)><DESTINATION MAC (6 bytes)>
 
@@ -80,6 +74,26 @@ private:
 
         this->networks->addTraffic(sourceMAC, destinationMAC);
     }
+
+    void readParseDeauth(){
+        // Read bytes until "==DEAUTH INFO END==" is found
+        std::vector<unsigned char> deauthInfo = this->readUntilStr("==END DEAUTH INFO==");
+
+        /*
+            Deauth info format:
+            6 BYTES: DESTINATION
+            6 BYTES: AP MAC
+        */
+        unsigned char* DST = new unsigned char[6];
+        unsigned char* AP = new unsigned char[6];
+        for(int i=0; i<6; i++){
+            DST[i] = deauthInfo[i];
+            AP[i] = deauthInfo[i+6];
+        }
+
+        this->networks->addDeauth(DST, AP);
+    }
+
 
     void sniffer(){
         this->Serial.write_s('s'); // Tell the ESP32 to start sniffing
@@ -96,6 +110,9 @@ private:
                     s.clear();
                 }else if(s.ends_with("==BEGIN TRAFFIC INFO==")){
                     this->readParseTrafficInfo();
+                    s.clear();
+                }else if(s.ends_with("==BEGIN DEAUTH INFO==")){
+                    this->readParseDeauth();
                     s.clear();
                 }
                 if(s.size() > 64){ // Dont waste memory holding onto useless data
@@ -170,5 +187,6 @@ public:
     void stopSniffer(){
         this->snifferRunning = false;
         this->snifferThread.join();
+        this->Serial.closePort();
     }
 };
