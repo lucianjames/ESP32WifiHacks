@@ -83,6 +83,8 @@ public:
                 this->startDeauther();
             }
         }
+        std::string selectedNet = this->networks->getSelectedAccessPoint().SSID;
+        ImGui::TextWrapped("Selected network: %s", selectedNet.c_str());
         ImGui::End();
     }
 
