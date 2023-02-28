@@ -11,9 +11,9 @@ private:
     beaconSniffer sniffer;
     beaconSpammer spammer;
     deauther deauth;
+    std::mutex espMutex;
 
 public:
-    std::mutex espMutex;
 
     ESP32Interface(std::string port="/dev/ttyUSB0", int baudrate=B115200){
         this->port = port;
