@@ -120,8 +120,10 @@ public:
             }
         }
 
+        /*
         std::sort(networkInfoStrings.begin(), networkInfoStrings.end());
         std::sort(trafficInfoStrings.begin(), trafficInfoStrings.end());
+        */
         
         this->netInfoMutex.unlock();
         ImGui::Text("Networks");
@@ -287,6 +289,11 @@ public:
     }
 
     accessPoint getSelectedAccessPoint(){
+        if(this->networks.size() == 0 || this->selectedNetwork >= this->networks.size() || this->selectedNetwork < 0){
+            accessPoint emptyAP;
+            emptyAP.SSID = "NONE";
+            return emptyAP;
+        }
         return this->networks[this->selectedNetwork];
     }
 };
