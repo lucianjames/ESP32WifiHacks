@@ -26,9 +26,9 @@ public:
 
     void update(){
         this->networks.draw(0, 0, 1, 0.5, ImGuiCond_Always);
-        this->sniffer.draw(0, 0.51, 0.25, 1, ImGuiCond_Always);
-        this->spammer.draw(0.26, 0.51, 0.5, 1, ImGuiCond_Always);
-        this->deauth.draw(0.51, 0.51, 0.75, 1, ImGuiCond_Always);
+        this->sniffer.draw(0, 0.51, 0.33, 1, ImGuiCond_Always);
+        this->spammer.draw(0.34, 0.51, 0.66, 1, ImGuiCond_Always);
+        this->deauth.draw(0.67, 0.51, 1, 1, ImGuiCond_Always);
     }
 
 };
