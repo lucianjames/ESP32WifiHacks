@@ -119,11 +119,6 @@ public:
                 deauthInfoStrings.push_back(dstBSSID + " deauthed by " + apBSSID + " (" + std::to_string(d.count) + " deauths detected)");
             }
         }
-
-        /*
-        std::sort(networkInfoStrings.begin(), networkInfoStrings.end());
-        std::sort(trafficInfoStrings.begin(), trafficInfoStrings.end());
-        */
         
         this->netInfoMutex.unlock();
         ImGui::Text("Networks");

@@ -30,8 +30,8 @@ void beaconSpammer(){
     int c = 0;
     while(c != '\n'){
         do{
-            c=getchar();
-        }while(c==-1);
+            c = getchar();
+        }while(c == -1);
         cmd[pos] = c;
         pos++;
         if(pos >= cmdLen-1){
@@ -40,13 +40,14 @@ void beaconSpammer(){
         }
     }
     cmd[pos-1] = '\0'; // Remove the newline character
+    ESP_LOGI("beaconSpammer", "Finished reading command");
 
     // Parse the command
     int ssidCount = 0;
     int ssidArrLen = 10;
-    ssids = malloc(ssidArrLen * sizeof(char*));
     char delim[] = {0x03, 0x00};
     char* ssid = strtok(cmd, delim);
+    ssids = (char**)malloc(ssidArrLen * sizeof(char*));
     while(ssid != NULL){
         ssids[ssidCount] = (char*)malloc((strlen(ssid)+1) * sizeof(char));
         strcpy(ssids[ssidCount], ssid);
@@ -63,7 +64,7 @@ void beaconSpammer(){
     APs = malloc(sizeof(struct apInfo) * ssidCount);
     for(int i=0; i<ssidCount; i++){
         ESP_LOGI("beaconSpammer", "SSID %d: %s", i, ssids[i]);
-        APs[i].ssid = ssids[i];
+        APs[i].ssid = ssids[i]; // Pointer to memory allocated and set above
         APs[i].ssidLen = strlen(ssids[i]);
         // Generate a random BSSID
         for(int j=0; j<6; j++){
@@ -74,7 +75,7 @@ void beaconSpammer(){
 
     int apIdx = 0;
     while(1){
-        // Assemble a beacon frame for the current AP
+        // Assemble a beacon frame for the current AP:
         uint8_t* frame = (uint8_t*)malloc(256*sizeof(uint8_t));
         uint8_t* p = frame;
         memcpy(p, beaconFrame_p1, sizeof(beaconFrame_p1));
@@ -87,8 +88,6 @@ void beaconSpammer(){
         p += sizeof(beaconFrame_p2);
         *p = APs[apIdx].ssidLen;
         p++;
-        //memcpy(p, APs[apIdx].ssid, APs[apIdx].ssidLen);
-        // The above line doesnt work, so heres the below line instead:
         for(int i=0; i<APs[apIdx].ssidLen; i++){
             *p = APs[apIdx].ssid[i];
             p++;
@@ -99,16 +98,16 @@ void beaconSpammer(){
         p++;
         memcpy(p, beaconFrame_p4, sizeof(beaconFrame_p4));
         p += sizeof(beaconFrame_p4);
-
+        // Send the frame BEACON_SEND_N times:
         for(int i=0; i<BEACON_SEND_N; i++){
             esp_err_t err = esp_wifi_80211_tx(WIFI_IF_AP, frame, p-frame, false);
             if(err != ESP_OK){
                 printf("Error sending beacon frame: %d\r\n", err);
             }
         }
-        free(frame); // Free the frame memory
+        free(frame);
         vTaskDelay(10 / portTICK_PERIOD_MS); // Changing this from 10 to 9 causes it to not work. Fun :)
-        apIdx = (apIdx+1)%ssidCount;
+        apIdx = (apIdx+1)%ssidCount; // Next AP in the array
     }
 }
 
@@ -117,13 +116,13 @@ TaskHandle_t beaconSpammerTaskHandle;
 void runBeaconSpammer(){
     wifiInit(true);
     xTaskCreate(beaconSpammer, "beaconSpammer", 4096*4, NULL, 5, &beaconSpammerTaskHandle);
-    vTaskDelay(500 / portTICK_PERIOD_MS); // Wait for the task to start
+    vTaskDelay(500 / portTICK_PERIOD_MS); // This just makes absolutely sure that the beacon spammer task has finished reading the command from the serial port
     // Once we can be sure that the command has been read, its safe to read for the 'q' character
     while(getchar() != 'q'){ // Wait for 'q' to be sent by host
         vTaskDelay(100 / portTICK_PERIOD_MS); // 100ms delay reduces cpu usage
     }
     vTaskDelete(beaconSpammerTaskHandle);
-    // Free the memory malloc'd by beaconSpammer
+    // Free the memory malloc'd by beaconSpammer:
     free(ssids);
     free(APs);
     wifiDeInit();

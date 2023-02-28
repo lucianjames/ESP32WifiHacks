@@ -27,15 +27,15 @@ void app_main(void){
     // 's' - Start beacon sniffing. Exits on 'q'
     // "b<SSID1>0x03<SSID2>0x03<SSIDn>\n" - Start sending out beacons with the given SSIDs. Exits on 'q'
     while(1){
+        vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms delay to reduce CPU usage
+        
         int c = getchar();
         if(c == 's'){
             runBeaconSniffer();
-        }
-        else if(c == 'b'){
+        }else if(c == 'b'){
             runBeaconSpammer();
         }else if(c == 'd'){
             runDeauther();
         }
-        vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms delay to reduce CPU usage
     }
 }

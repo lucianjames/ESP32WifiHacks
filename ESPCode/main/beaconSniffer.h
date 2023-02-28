@@ -1,3 +1,5 @@
+#define channelHopDelay 100 // Delay between channel hops, in ms
+
 void beaconSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type) {
     wifi_promiscuous_pkt_t* pkt = (wifi_promiscuous_pkt_t*)buf; // Cast the void type into an actual usable packet type
 
@@ -27,12 +29,12 @@ void beaconSnifferCallback(void* buf, wifi_promiscuous_pkt_type_t type) {
 void beaconSnifferChannelHopper(void* pvParameters) {
     int ch = 1;
     while(1) {
-        ch = ch % 13 + 1; // Cycle through channels 1-13
         ESP_ERROR_CHECK(esp_wifi_set_promiscuous(false));
         ESP_ERROR_CHECK(esp_wifi_set_channel(ch, WIFI_SECOND_CHAN_NONE));
         ESP_ERROR_CHECK(esp_wifi_set_promiscuous_rx_cb(&beaconSnifferCallback)); // Need to re-set the callback function after disabling promiscuous mode
         ESP_ERROR_CHECK(esp_wifi_set_promiscuous(true));
-        vTaskDelay(100 / portTICK_PERIOD_MS); // Wait for 100ms
+        vTaskDelay(channelHopDelay / portTICK_PERIOD_MS); // Wait for 100ms
+        ch = ch % 13 + 1; // Cycle through channels 1-13
     }
 }
 
