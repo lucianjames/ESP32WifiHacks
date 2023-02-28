@@ -7,7 +7,7 @@
 #include "ArduinoSerialIO/arduinoSerial.hpp"
 #include "uiHelper.h"
 
-#define sendCmdDelayMS 6
+#define sendCmdDelayMS 8
 
 class beaconSpammer{
 private:
