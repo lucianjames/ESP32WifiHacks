@@ -15,6 +15,7 @@ private:
     char SSID[33] = {0};
     int APCount = 10;
     std::thread spammerThread;
+    std::mutex* espMutex;
 
     void spammer(){
         std::vector<char> ssidCmd;
@@ -57,9 +58,10 @@ public:
         }
     }
 
-    void config(std::string port, int baudrate){
+    void config(std::string port, int baudrate, std::mutex* m){
         this->port = port;
         this->baudrate = baudrate;
+        this->espMutex = m;
     }
 
     /*
@@ -107,6 +109,9 @@ public:
     }
 
     void startSpammer(){
+        if(!this->espMutex->try_lock()){
+            return;
+        }
         this->Serial.openPort(this->port);
         this->Serial.begin(this->baudrate);
         this->spammerRunning = true;
@@ -116,6 +121,7 @@ public:
     void stopSpammer(){
         this->spammerRunning = false;
         spammerThread.join();
+        this->espMutex->unlock();
     }
 
 };

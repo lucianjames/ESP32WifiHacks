@@ -15,6 +15,7 @@ private:
     networksList* networks;
     std::thread deautherThread;
     accessPoint target;
+    std::mutex* espMutex;
 
     void deauth(){
         // Send the deauth command to the ESP
@@ -45,10 +46,11 @@ public:
         }
     }
 
-    void config(networksList* networks, std::string port, int baudrate){
+    void config(networksList* networks, std::string port, int baudrate, std::mutex* m){
         this->networks = networks;
         this->port = port;
         this->baudrate = baudrate;
+        this->espMutex = m;
     }
 
     void draw(float wStartXNorm,
@@ -85,6 +87,9 @@ public:
     }
 
     void startDeauther(){
+        if(!this->espMutex->try_lock()){
+            return;
+        }
         this->target = this->networks->getSelectedAccessPoint();
         this->Serial.openPort(this->port);
         this->Serial.begin(this->baudrate);
@@ -95,6 +100,7 @@ public:
     void stopDeauther(){
         this->deautherRunning = false;
         this->deautherThread.join();
+        this->espMutex->unlock();
     }
 
 };

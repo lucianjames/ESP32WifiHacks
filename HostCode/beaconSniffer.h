@@ -14,6 +14,7 @@ private:
     arduinoSerial Serial;
     networksList* networks;
     std::thread snifferThread; // Runs the function that reads the output of the ESP32, parses it, and adds APs to this->networks
+    std::mutex* espMutex;
 
     std::vector<unsigned char> readUntilStr(std::string term){
         std::string s;
@@ -135,10 +136,11 @@ public:
         }
     }
 
-    void config(networksList* networks, std::string port, int baudrate){
+    void config(networksList* networks, std::string port, int baudrate, std::mutex* m){
         this->networks = networks;
         this->port = port;
         this->baudrate = baudrate;
+        this->espMutex = m;
     }
 
     // Draws a menu to turn sniffing on/off
@@ -178,6 +180,9 @@ public:
     }
 
     void startSniffer(){
+        if(!this->espMutex->try_lock()){
+            return;
+        }
         this->Serial.openPort(this->port);
         this->Serial.begin(this->baudrate);
         this->snifferRunning = true;
@@ -188,5 +193,6 @@ public:
         this->snifferRunning = false;
         this->snifferThread.join();
         this->Serial.closePort();
+        this->espMutex->unlock();
     }
 };
