@@ -12,7 +12,6 @@
 #include "beaconSpammer.h"
 #include "deauther.h"
 #include "espFrameSanityCheckHack.h"
-#include "deauthDetector.h"
 
 void app_main(void){
     //Initialize NVS 
@@ -36,8 +35,6 @@ void app_main(void){
             runBeaconSpammer();
         }else if(c == 'd'){
             runDeauther();
-        }else if(c == 't'){
-            runDeauthDetector();
         }
         vTaskDelay(10 / portTICK_PERIOD_MS); // 10ms delay to reduce CPU usage
     }
