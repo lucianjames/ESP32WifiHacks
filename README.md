@@ -1,10 +1,12 @@
 # ESP32WifiHacks
-Easy to use WiFi tools for the ESP32. Graphical interface provided via IMGUI
+Easy to use WiFi tools for the ESP32. Graphical interface provided via IMGUI.
+
+Created as a bit of an experiment, not entirely practical, but neat.
 
 ![image](https://user-images.githubusercontent.com/65134690/221854171-6e5a74c0-b164-4a0f-adb9-0bd12d759464.png)
 
 # Platform support
-Linux-only due to limitations of the ArduinoSerialIO library, but an update to that library should result in it working cross-platform just fine.
+Linux-only due to limitations of the ArduinoSerialIO library, but an update to that library should result in it working cross-platform just fine (maybe I should do that some time).
 
 # Features
 * Sniff wifi traffic (Data, beacons, deauth, see image about)
@@ -16,7 +18,7 @@ Linux-only due to limitations of the ArduinoSerialIO library, but an update to t
 ## Using the ESP-IDF to flash the ESP32
 * https://github.com/espressif/vscode-esp-idf-extension/blob/master/docs/tutorial/install.md
 * Open the "espcode" folder
-* Build and flash the ESP32
+* Build the project and flash it to the ESP32
 
 ## Compiling the host program
 Create a build directory:
