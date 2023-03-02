@@ -81,7 +81,7 @@ int main(int argc, char *argv[]){
         return 1;
     }
 
-    ESP32Interface UI(argv[1]);
+    ESP32Interface app(argv[1]);
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]){
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        UI.update();
+        app.update(); // Does basically everything, all the other lines in this file are just opengl boilerplate crap
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -52,7 +52,7 @@ void beaconSpammer(){
         ssids[ssidCount] = (char*)malloc((strlen(ssid)+1) * sizeof(char));
         strcpy(ssids[ssidCount], ssid);
         ssidCount++;
-        if(ssidCount >= ssidArrLen){
+        if(ssidCount >= ssidArrLen){ // If the array is full, double its size
             ssidArrLen += 10;
             ssids = (char**)realloc(ssids, ssidArrLen * sizeof(char*));
         }

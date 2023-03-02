@@ -46,8 +46,7 @@ private:
     int selectedTraffic = 0;
 
     // Used for creating nice readable MAC addresses in the UI:
-    template<typename T>
-    std::string charBufToHexStr(T buf, int n){
+    template<typename T> std::string charBufToHexStr(T buf, int n){
         std::string hexStr;
         for(int i=0; i<n; i++){
             char hex[2];
@@ -55,7 +54,7 @@ private:
             hexStr += hex;
             hexStr += ":";
         }
-        hexStr.pop_back();
+        hexStr.pop_back(); // Remove the last ":"
         return hexStr;
     }
 
@@ -86,9 +85,7 @@ public:
                     this->networks.size(),
                     this->networks.size()
         );
-        ImGui::PopItemWidth();
         ImGui::Text("Data traffic (0x88 and 0x08 frames)");
-        ImGui::PushItemWidth(-1);
         ImGui::ListBox("##Traffic",
                     &this->selectedTraffic,
                     [](void* data, int idx, const char** out_text){
@@ -100,9 +97,7 @@ public:
                     this->traffic.size(),
                     this->traffic.size()
         );
-        ImGui::PopItemWidth();
         ImGui::Text("Deauths (0xc0 frames)");
-        ImGui::PushItemWidth(-1);
         ImGui::ListBox("##Deauths",
                     &this->selectedTraffic,
                     [](void* data, int idx, const char** out_text){
@@ -192,7 +187,6 @@ public:
 
         // Not found, so create new struct and add to this->networks
         trafficInfo newTraffic;
-
         memcpy(newTraffic.SRC_BSSID, SRC_BSSID, 6);
         memcpy(newTraffic.DST_BSSID, DST_BSSID, 6);
         newTraffic.SRC_BSSID_hex = charBufToHexStr(newTraffic.SRC_BSSID, 6);
