@@ -15,6 +15,7 @@ struct accessPoint{
     unsigned char BSSID[6];
     int channel;
     int beaconsReceived = 1;
+    std::string infoStr;
 };
 
 struct trafficInfo{
@@ -23,6 +24,7 @@ struct trafficInfo{
     unsigned char SRC_BSSID[6];
     unsigned char DST_BSSID[6];
     int count = 1;
+    std::string infoStr;
 };
 
 struct deauthInfo{
@@ -31,6 +33,7 @@ struct deauthInfo{
     unsigned char DST[6];
     unsigned char AP[6];
     int count = 1;
+    std::string infoStr;
 };
 
 class networksList{
@@ -70,69 +73,18 @@ public:
                                               wEndYNorm,
                                               wCondition);
         ImGui::Begin("Networks");
-
-        this->netInfoMutex.lock();
-        /*
-            This isnt a very efficient approach, but theres no actual reason to optimise it
-        */
-        std::vector<std::string> networkInfoStrings; // Have to create this because the listbox function works based on pointers
-        if(this->networks.size() == 0){
-            networkInfoStrings.push_back("No networks discovered");
-        }else{
-            for(auto n : this->networks){
-                networkInfoStrings.push_back(n.SSID + " / " + n.BSSID_hex + " on channel " + std::to_string(n.channel) + ". Received " + std::to_string(n.beaconsReceived) + " beacons");
-            }
-        }
-        std::vector<std::string> trafficInfoStrings;
-        if(this->traffic.size() == 0){
-            trafficInfoStrings.push_back("No traffic discovered");
-        }else{
-            for(auto t : this->traffic){
-                std::string srcBSSID = t.SRC_BSSID_hex;
-                std::string dstBSSID = t.DST_BSSID_hex;
-                for(auto n : this->networks){
-                    if(t.SRC_BSSID_hex == n.BSSID_hex){
-                        srcBSSID += " (" + n.SSID + ")";
-                    }
-                    if(t.DST_BSSID_hex == n.BSSID_hex){
-                        dstBSSID += " (" + n.SSID + ")";
-                    }
-                }
-                trafficInfoStrings.push_back(srcBSSID + " -> " + dstBSSID + " (" + std::to_string(t.count) + " packets detected)");
-            }
-        }
-        std::vector<std::string> deauthInfoStrings;
-        if(this->deauths.size() == 0){
-            deauthInfoStrings.push_back("No deauths discovered");
-        }else{
-            for(auto d : this->deauths){
-                std::string dstBSSID = d.DST_hex;
-                std::string apBSSID = d.AP_hex;
-                for(auto n : this->networks){
-                    if(d.DST_hex == n.BSSID_hex){
-                        dstBSSID += " (" + n.SSID + ")";
-                    }
-                    if(d.AP_hex == n.BSSID_hex){
-                        apBSSID += " (" + n.SSID + ")";
-                    }
-                }
-                deauthInfoStrings.push_back(dstBSSID + " deauthed by " + apBSSID + " (" + std::to_string(d.count) + " deauths detected)");
-            }
-        }
-        
-        this->netInfoMutex.unlock();
         ImGui::Text("Networks");
         ImGui::PushItemWidth(-1);
         ImGui::ListBox("##Networks",
                     &this->selectedNetwork,
                     [](void* data, int idx, const char** out_text){
-                        std::vector<std::string>* networkStrPointer = (std::vector<std::string>*)data; // Convert the void* data to its actual type
-                        *out_text = networkStrPointer->at(idx).c_str();
+                        std::vector<accessPoint>* networksPointer = (std::vector<accessPoint>*)data; // Convert the void* data to its actual type
+                        *out_text = networksPointer->at(idx).infoStr.c_str();
                         return true;
                     },
-                    (void*)&networkInfoStrings,
-                    networkInfoStrings.size(),
-                    networkInfoStrings.size()
+                    (void*)&this->networks,
+                    this->networks.size(),
+                    this->networks.size()
         );
         ImGui::PopItemWidth();
         ImGui::Text("Data traffic (0x88 and 0x08 frames)");
@@ -140,13 +92,13 @@ public:
         ImGui::ListBox("##Traffic",
                     &this->selectedTraffic,
                     [](void* data, int idx, const char** out_text){
-                        std::vector<std::string>* trafficStrPointer = (std::vector<std::string>*)data; // Convert the void* data to its actual type
-                        *out_text = trafficStrPointer->at(idx).c_str();
+                        std::vector<trafficInfo>* trafficPointer = (std::vector<trafficInfo>*)data;
+                        *out_text = trafficPointer->at(idx).infoStr.c_str();
                         return true;
                     },
-                    (void*)&trafficInfoStrings,
-                    trafficInfoStrings.size(),
-                    trafficInfoStrings.size()
+                    (void*)&this->traffic,
+                    this->traffic.size(),
+                    this->traffic.size()
         );
         ImGui::PopItemWidth();
         ImGui::Text("Deauths (0xc0 frames)");
@@ -154,13 +106,13 @@ public:
         ImGui::ListBox("##Deauths",
                     &this->selectedTraffic,
                     [](void* data, int idx, const char** out_text){
-                        std::vector<std::string>* deauthStrPointer = (std::vector<std::string>*)data; // Convert the void* data to its actual type
-                        *out_text = deauthStrPointer->at(idx).c_str();
+                        std::vector<deauthInfo>* deauthsPointer = (std::vector<deauthInfo>*)data; // Convert the void* data to its actual type
+                        *out_text = deauthsPointer->at(idx).infoStr.c_str();
                         return true;
                     },
-                    (void*)&deauthInfoStrings,
-                    deauthInfoStrings.size(),
-                    deauthInfoStrings.size()
+                    (void*)&this->deauths,
+                    this->deauths.size(),
+                    this->deauths.size()
         );
         ImGui::PopItemWidth();
         ImGui::End();
@@ -194,6 +146,7 @@ public:
             }
             if(n.SSID == SSID && BSSIDMatch && n.channel == channel){
                 n.beaconsReceived++;
+                n.infoStr = n.SSID + " / " + n.BSSID_hex + " on channel " + std::to_string(n.channel) + " (Received " + std::to_string(n.beaconsReceived) + " beacons)";
                 this->netInfoMutex.unlock();
                 return;
             }
@@ -205,6 +158,7 @@ public:
         memcpy(newAP.BSSID, BSSID, 6);
         newAP.BSSID_hex = charBufToHexStr(newAP.BSSID, 6);
         newAP.channel = channel;
+        newAP.infoStr = newAP.SSID + " / " + newAP.BSSID_hex + " on channel " + std::to_string(newAP.channel) + " (Received 1 beacons)";
         this->networks.push_back(newAP);
 
         this->netInfoMutex.unlock();
@@ -230,6 +184,7 @@ public:
             }
             if(srcMatch && dstMatch){
                 t.count++;
+                t.infoStr = t.SRC_BSSID_hex + " -> " + t.DST_BSSID_hex + " (" + std::to_string(t.count) + " packets detected)";
                 this->netInfoMutex.unlock();
                 return;
             }
@@ -242,6 +197,7 @@ public:
         memcpy(newTraffic.DST_BSSID, DST_BSSID, 6);
         newTraffic.SRC_BSSID_hex = charBufToHexStr(newTraffic.SRC_BSSID, 6);
         newTraffic.DST_BSSID_hex = charBufToHexStr(newTraffic.DST_BSSID, 6);
+        newTraffic.infoStr = newTraffic.SRC_BSSID_hex + " -> " + newTraffic.DST_BSSID_hex + " (1 packets detected)";
         this->traffic.push_back(newTraffic);
 
         this->netInfoMutex.unlock();
@@ -252,21 +208,22 @@ public:
         this->netInfoMutex.lock();
 
         // Check if an entry already exists
-        for(auto& t : this->deauths){
+        for(auto& d : this->deauths){
             bool dstMatch = true;
             bool apMatch = true;
             for(int i=0; i<6; i++){
-                if(t.DST[i] != DST[i]){
+                if(d.DST[i] != DST[i]){
                     dstMatch = false;
                     break;
                 }
-                if(t.AP[i] != AP[i]){
+                if(d.AP[i] != AP[i]){
                     apMatch = false;
                     break;
                 }
             }
             if(dstMatch && apMatch){
-                t.count++;
+                d.count++;
+                d.infoStr = d.DST_hex + " deauthed by " + d.AP_hex + " (" + std::to_string(d.count) + " deauths detected)";
                 this->netInfoMutex.unlock();
                 return;
             }
@@ -278,6 +235,7 @@ public:
         memcpy(newDeauth.AP, AP, 6);
         newDeauth.DST_hex = charBufToHexStr(newDeauth.DST, 6);
         newDeauth.AP_hex = charBufToHexStr(newDeauth.AP, 6);
+        newDeauth.infoStr = newDeauth.DST_hex + " deauthed by " + newDeauth.AP_hex + " (1 deauths detected)";
         this->deauths.push_back(newDeauth);
 
         this->netInfoMutex.unlock();
